@@ -6,6 +6,8 @@
 #define degToRad(angleInDegrees) ((angleInDegrees) * M_PI / 180.0)
 #define radToDeg(angleInRadians) ((angleInRadians) * 180.0 / M_PI)
 
+#define vspeed(distance_a, distance_b, time) ((distance_b - distance_a) / time )
+
 #ifdef TARGET_HW
 #include "interface.h"
 #endif
@@ -18,7 +20,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h>
 
-void run(void);
-void compute(char*);
-double haversine(double, double, double, double);
+typedef struct {
+  double lat;
+  double lon;
+  double speed;
+  double angle;
+  double distance;
+}wrbot;
+
+void run(wrbot *bot);
+void compute(wrbot *bot, char*);
+void robot_status(wrbot *bot);
+void robot_value_init(wrbot *bot);
+void robot_loc_mock(wrbot *bot);
+void robot_failsafe(double);
+double haversine(wrbot *bot, double, double);
