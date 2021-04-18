@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 #include <math.h>
 #include <unistd.h>
 
@@ -36,4 +37,5 @@ void robot_status(wrbot *bot);
 void robot_value_init(wrbot *bot);
 void robot_loc_mock(wrbot *bot);
 void robot_failsafe(double);
+void robot_sigint(int);
 double haversine(wrbot *bot, double, double);

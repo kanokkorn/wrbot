@@ -3,6 +3,7 @@
 int main(void) {
   wrbot *bot = malloc(sizeof(wrbot));
   robot_value_init(bot);
+  signal(SIGINT, robot_sigint);
   run(bot);
   return 0;
 }
@@ -76,6 +77,12 @@ void robot_status(wrbot *bot) {
   printf("current lon  : %f \n", bot->lon);
   printf("current speed: %f \n", bot->speed);
   printf("current angle: %f \n", bot->angle);
+}
+
+void robot_sigint(int x) {
+  puts("interrupted... stop!");
+  /* stop all driver */
+  exit(x);
 }
 
 void robot_value_init(wrbot *bot) {
