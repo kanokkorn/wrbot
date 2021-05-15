@@ -23,6 +23,8 @@
 #include <math.h>
 #include <unistd.h>
 
+#include <curses.h>
+
 typedef struct {
   double lat;
   double lon;
@@ -31,11 +33,14 @@ typedef struct {
   double distance;
 }wrbot;
 
-void run(wrbot *bot);
-void compute(wrbot *bot, char*);
+/* robot */
 void robot_status(wrbot *bot);
 void robot_value_init(wrbot *bot);
 void robot_loc_mock(wrbot *bot);
 void robot_failsafe(double);
 void robot_sigint(int);
+
+/* functions */
+void run(wrbot *bot);
+void compute(wrbot *bot, char*);
 double haversine(wrbot *bot, double, double);
