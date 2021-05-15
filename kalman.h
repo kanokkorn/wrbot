@@ -2,6 +2,10 @@
 #define KALMAN_H
 
 #include <math.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define guess(upper, lower) (( rand() % (upper - lower + 1)) + lower)
 
 typedef struct {
   float current_estimate;
