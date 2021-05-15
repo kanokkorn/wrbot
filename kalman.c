@@ -1,5 +1,9 @@
 #include "kalman.h"
 
+/*  Uncertainty in estimate ?
+ *  uncertainty in measurement ?
+ */
+
 float time_update(kalman *kx) {
    return kx->current_estimate = (const_a  * kx->current_estimate) + (const_b * no_signal); 
 }
