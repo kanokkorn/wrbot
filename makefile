@@ -2,8 +2,10 @@ TARGET_HW  = 0
 ADV_METHOD = 0
 
 CC = cc
-LIBS = -lm
-CFLAGS = -std=c89 -Wall -Wextra -Os -s -ansi -pedantic -fno-math-errno -fdelete-null-pointer-checks
+LIBS = -lm -lcurses
+CFLAGS = -std=c89 -Wall -Wextra -Wconversion \
+         -O3 -s -pedantic -fno-math-errno \
+         -fdelete-null-pointer-checks
 PROJECT = wrbot
 
 ifeq ($(TARGET_HW), 1)
@@ -14,7 +16,7 @@ ifeq ($(ADV_METHOD), 1)
 endif
 
 $(PROJECT): main.c
-	$(CC) $(LIBS) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@ $(LIBS)
 clean:
 	rm $(PROJECT)
 
