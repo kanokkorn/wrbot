@@ -47,7 +47,8 @@ void compute(wrbot *bot, char* pos) {
   }
   while (distance >= tolerance_value) {
     distance = haversine(bot, atof(gps_array[0]), atof(gps_array[1]));
-    bot->distance = distance;
+    bot->speed = (distance - bot->distance) / 1;
+    bot->distance = distance * 1;
     printf("distance to destination -> %f meters\n", distance);
     robot_loc_mock(bot);
     robot_status(bot);
