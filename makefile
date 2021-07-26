@@ -4,7 +4,7 @@ ADV_METHOD = 0
 CC = cc
 LIBS = -lm -lcurses
 CFLAGS = -std=c89 -Wall -Wextra -Wconversion \
-         -O3 -s -pedantic -fno-math-errno \
+         -O3 -g -pedantic -fno-math-errno \
          -fdelete-null-pointer-checks
 PROJECT = wrbot
 
@@ -18,6 +18,6 @@ endif
 $(PROJECT): main.c
 	$(CC) $(CFLAGS) $< -o $@ $(LIBS)
 clean:
-	rm $(PROJECT)
+	$(RM) $(PROJECT)
 
 .SILENT : clean
