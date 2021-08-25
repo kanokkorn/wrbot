@@ -4,20 +4,31 @@ ADV_METHOD = 0
 CC = cc
 LIBS = -lm -lcurses
 CFLAGS = -std=c89 -Wall -Wextra -Wconversion \
-         -O3 -s -pedantic -fno-math-errno \
+         -O3 -g -pedantic -fno-math-errno \
          -fdelete-null-pointer-checks
-PROJECT = wrbot
+OBJ = main.o
+SRC = main.c
+BIN = wrbot
 
 ifeq ($(TARGET_HW), 1)
   CFLAGS += -DTARGET_HW
+	SRC += interface.c
+	OBJ += interface.o
 endif
 ifeq ($(ADV_METHOD), 1)
   CFLAGS += -DADV_METHOD
+	SRC += kalman.c
+	OBJ += kalman.o
 endif
 
-$(PROJECT): main.c
-	$(CC) $(CFLAGS) $< -o $@ $(LIBS)
+ALL: $(OBJ) $(BIN)
+.PHONY = ALl
+
+$(OBJ): $(SRC)
+	$(CC) $(CFLAGS) $^ -c
+$(BIN) : $(OBJ)
+	$(CC) $^ -o $@ $(LIBS)
 clean:
-	rm $(PROJECT)
+	$(RM) *.o $(BIN)
 
 .SILENT : clean
