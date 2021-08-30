@@ -1,34 +1,35 @@
 TARGET_HW  = 0
 ADV_METHOD = 0
 
-CC = cc
-LIBS = -lm -lcurses
-CFLAGS = -std=c89 -Wall -Wextra -Wconversion \
-         -O3 -g -pedantic -fno-math-errno \
-         -fdelete-null-pointer-checks
-OBJ = main.o
-SRC = main.c
-BIN = wrbot
+cc = clang
+ld = lld
+libs = -lm -lcurses
+cflags = -std=c89 -Wall -Wextra -Wconversion -Werror\
+         -Wdouble-promotion -Wshadow  -fno-math-errno\
+				 -fdelete-null-pointer-checks -fno-common\
+				 -Os -g3 -pedantic
+
+bin = wrbot
+src = main.c
+obj = $(patsubst %.c, %.o, $(src))
 
 ifeq ($(TARGET_HW), 1)
-  CFLAGS += -DTARGET_HW
-	SRC += interface.c
-	OBJ += interface.o
+  cflags += -DTARGET_HW
+	src += interface.c
+	obj += interface.o
 endif
 ifeq ($(ADV_METHOD), 1)
-  CFLAGS += -DADV_METHOD
-	SRC += kalman.c
-	OBJ += kalman.o
+  cflags += -DADV_METHOD
+	src += kalman.c
+	obj += kalman.o
 endif
 
-ALL: $(OBJ) $(BIN)
-.PHONY = ALl
+all: $(obj) $(bin)
+.PHONY: all clean
 
-$(OBJ): $(SRC)
-	$(CC) $(CFLAGS) $^ -c
-$(BIN) : $(OBJ)
-	$(CC) $^ -o $@ $(LIBS)
+$(obj): $(src)
+	$(cc) $(cflags) $^ -c
+$(bin) : $(obj)
+	$(cc) -fuse-ld=$(ld) $^ -o $@ $(libs)
 clean:
-	$(RM) *.o $(BIN)
-
-.SILENT : clean
+	$(RM) *.o $(bin)
