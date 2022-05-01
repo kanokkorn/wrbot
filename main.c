@@ -1,14 +1,6 @@
 #include "main.h"
 
-int main(void) {
-  wrbot *bot = malloc(sizeof(wrbot));
-  robot_value_init(bot);
-  signal(SIGINT, robot_sigint);
-  run(bot);
-  return 0;
-}
-
-void run(wrbot *bot) {
+int run(wrbot *bot) {
   const char* fname = "gps_list.txt";
   char* gps_line = NULL;
   size_t len = 0;
@@ -17,7 +9,7 @@ void run(wrbot *bot) {
   FILE* gps_data = fopen(fname, "r");
   printf("file name is -> %s\n", fname);
   if (!gps_data) {
-    perror("File opening failed");
+    printf("File opening failed\n");
     exit(EXIT_FAILURE);
   }
   while ((read = getline(&gps_line, &len, gps_data)) != -1) {
@@ -26,40 +18,39 @@ void run(wrbot *bot) {
     round++;
   }
   if (ferror(gps_data)) {
-    puts("I/O error while reading");
+    printf("I/O error while reading\n");
   } else if (feof(gps_data)) {
-    puts("End of file");
+    printf("End of file\n");
   }
   fclose(gps_data);
   if (gps_line) {
     free(gps_line);
   }
+  return 0;
 }
 
 void compute(wrbot *bot, char* pos) {
-  int x = 0;
-  double distance = 10.0000;
+  unsigned int x = 0;
+  double wr_distance = 10.0000;
   char* gps_array[2];
   char* pos_tok = strtok(pos, ",");
   while (pos_tok) {
     gps_array[x++] = pos_tok;
     pos_tok = strtok(NULL, " ");
   }
-  while (distance >= tolerance_value) {
-    distance = haversine(bot, atof(gps_array[0]), atof(gps_array[1]));
-    bot->distance = distance;
-    printf("distance to destination -> %f meters\n", distance);
+  while (wr_distance >= TOLERANCE_VALUE) {
+    wr_distance = haversine(bot, atof(gps_array[0]), atof(gps_array[1]));
+    bot->wr_distance = wr_distance;
+    printf("distance to destination -> %f meters\n", wr_distance);
     robot_loc_mock(bot);
     robot_status(bot);
     sleep(1);
   }
   printf("=== arrived ===\n");
-  puts("doing task");
-  /**
-   * TODO: add task
-   */
+  printf("doing task\n");
+  /* task */
   sleep(20);
-  puts("done...");
+  printf("done...\n");
   sleep(5);
 }
 
@@ -68,7 +59,7 @@ double haversine(wrbot *bot, double lat_des, double lon_des) {
   double lat_int_rad = degToRad(bot->lat), lat_des_rad = degToRad(lat_des);
   double lat_delta = degToRad(lat_des - bot->lat), lon_delta = degToRad(lon_des - bot->lon);
   double a = pow(sin(lat_delta / 2), 2) + cos(lat_int_rad) * cos(lat_des_rad) * pow(lon_delta / 2, 2);
-  return (c = ( 2 * atan2(sqrt(a), sqrt(1-a)))) != 0 ? earth_rad * c : 0;
+  return (c = ( 2 * atan2(sqrt(a), sqrt(1-a)))) != 0 ? EARTH_RAD * c : 0;
 }
 
 void robot_status(wrbot *bot) {
@@ -80,7 +71,7 @@ void robot_status(wrbot *bot) {
 }
 
 void robot_sigint(int x) {
-  puts("interrupted... stop!");
+  printf("interrupted... stop!\n");
   /* stop all driver */
   exit(x);
 }
@@ -95,5 +86,11 @@ void robot_loc_mock(wrbot *bot) {
   bot->lon += 0.000001;
 }
 
-void robot_failsafe(double distance) {
+int main(void) {
+  wrbot *bot = malloc(sizeof(wrbot));
+  robot_value_init(bot);
+  signal(SIGINT, robot_sigint);
+  run(bot);
+  free(bot);
+  return EXIT_SUCCESS;
 }
