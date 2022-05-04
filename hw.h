@@ -41,7 +41,7 @@ void raspi_setup(void){
   chip = gpiod_chip_open_by_name(chipname);
   (void)gps_stream(&gps_data, WATCH_ENABLE | WATCH_JSON, NULL);
   if (!check_gps_connection) {
-    perror("G
+    perror("GPS failed to connect\n");
   }
   if (!chip) {
     perror("Open chip failed\n");
@@ -59,5 +59,3 @@ void robot_signal_light(int) {
 }
 
 #endif
-
-
