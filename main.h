@@ -1,15 +1,16 @@
 #define _GNU_SOURCE
 
-#define tolerance_value 2.00
-#define earth_rad 6.3781e6
+#ifndef __has_builtin
+  #define __has__builtin(x) 0
+#endif
 
-#define degToRad(angleInDegrees) ((angleInDegrees) * M_PI / 180.0)
-#define radToDeg(angleInRadians) ((angleInRadians) * 180.0 / M_PI)
-
-#define vspeed(distance_a, distance_b, time) ((distance_b - distance_a) / time )
+#define TOLERANCE_VALUE 2.00
+#define EARTH_RAD 6.3781e6
+#define LEN 2
+#define TOTAL LEN * 1000
 
 #ifdef TARGET_HW
-#include "interface.h"
+#include "hw.h"
 #endif
 
 #ifdef ADV_METHOD
@@ -17,21 +18,32 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
 #include <math.h>
 #include <unistd.h>
 
-#include <curses.h>
-
 typedef struct {
   double lat;
   double lon;
   double speed;
   double angle;
-  double distance;
+  double wr_distance;
 }wrbot;
+
+static inline double vspeed(double distance_a, double distance_b, int time) {
+  return (distance_b - distance_a) / time;
+}
+
+static inline double degToRad(double angleInDegrees) {
+  return angleInDegrees * M_PI / 180;
+}
+
+static inline double radToDeg(double angleInRadians) {
+  return angleInRadians * 180 / M_PI;
+}
 
 /* robot */
 void robot_status(wrbot *bot);
@@ -40,7 +52,7 @@ void robot_loc_mock(wrbot *bot);
 void robot_failsafe(double);
 void robot_sigint(int);
 
-/* functions */
-void run(wrbot *bot);
+/* prototypes */
+int run(wrbot *bot);
 void compute(wrbot *bot, char*);
 double haversine(wrbot *bot, double, double);
