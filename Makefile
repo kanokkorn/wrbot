@@ -1,8 +1,8 @@
 TARGET_HW  = 0
 ADV_METHOD = 0
 
-CC = cc
-LD = -fuse-ld=ld
+CC = clang
+LD = -fuse-ld=lld --rtlib=compiler-rt
 LDLIBS = -lm
 CFLAGS = -std=c99 -Wall -Wextra -Wconversion -Wshadow\
          -Wdouble-promotion -fno-math-errno -pedantic\
