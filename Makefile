@@ -19,7 +19,6 @@ ifeq ($(TARGET_HW), 1)
 endif
 ifeq ($(ADV_METHOD), 1)
   CFLAGS += -DADV_METHOD
-	SRC += kalman.c
 endif
 
 all: $(OBJ) $(BIN)
