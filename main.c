@@ -44,7 +44,7 @@ void compute(wrbot *bot, char* pos) {
     printf("distance to destination -> %f meters\n", wr_distance);
     robot_loc_mock(bot);
     robot_status(bot);
-    sleep(1);
+    usleep(20);
   }
   printf("=== arrived ===\n");
   printf("doing task\n");
@@ -63,11 +63,13 @@ double haversine(wrbot *bot, double lat_des, double lon_des) {
 }
 
 void robot_status(wrbot *bot) {
+  printf("\e[1;1H\e[2J");
   printf("<-- status -->\n");
   printf("current lat  : %f \n", bot->lat);
   printf("current lon  : %f \n", bot->lon);
   printf("current speed: %f \n", bot->speed);
   printf("current angle: %f \n", bot->angle);
+  printf("distance to destination -> %f meters\n", bot->wr_distance);
 }
 
 void robot_sigint(int x) {
@@ -90,7 +92,6 @@ int main(void) {
   wrbot *bot = malloc(sizeof(wrbot));
   robot_value_init(bot);
   signal(SIGINT, robot_sigint);
-  run(bot);
-  free(bot);
-  return EXIT_SUCCESS;
+  run(bot) == 0 ? free(bot) : robot_sigint(1);
+  return 0;
 }
