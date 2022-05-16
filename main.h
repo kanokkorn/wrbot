@@ -14,7 +14,7 @@
 #endif
 
 #ifdef ADV_METHOD
-#include "kalman.h"
+#include "adv.h"
 #endif
 
 #include <stdio.h>
