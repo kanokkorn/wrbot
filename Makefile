@@ -6,9 +6,8 @@ LD = -fuse-ld=lld --rtlib=compiler-rt
 LDLIBS = -lm
 CFLAGS = -std=c99 -Wall -Wextra -Wconversion -Wshadow\
          -Wdouble-promotion -fno-math-errno -pedantic\
-				 -fdelete-null-pointer-checks -fno-common\
-				 -g
-
+				 -fdelete-null-pointer-checks -fno-common -g \
+				 -pipe -march=native -mtune=native
 BIN = wrbot
 SRC = main.c
 OBJ = $(SRC:.c=.o)
