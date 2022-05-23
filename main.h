@@ -9,6 +9,9 @@
 #define LEN 2
 #define TOTAL LEN * 1000
 
+#define BUF 10
+#define BUFSIZE
+
 #ifdef TARGET_HW
 #include "hw.h"
 #endif
@@ -24,6 +27,7 @@
 #include <signal.h>
 #include <math.h>
 #include <unistd.h>
+
 
 typedef struct {
   double lat;
