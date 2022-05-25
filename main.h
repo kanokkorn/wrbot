@@ -1,7 +1,11 @@
-#define _GNU_SOURCE
+#define _DEFAULT_SOURCE
 
 #ifndef __has_builtin
   #define __has__builtin(x) 0
+#endif
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
 #endif
 
 #define TOLERANCE_VALUE 2.00
