@@ -14,16 +14,10 @@
 #define led_pin 23
 
 #define MODE_STR_NUM 4
-static char *mode_str[MODE_STR_NUM] = {
-  "n/a",
-  "None",
-  "2D",
-  "3D"
-};
+static char* mode_str[MODE_STR_NUM] = {"n/a", "None", "2D", "3D"};
 
-int gps_open(char * server, char * port, struct gps_data_t * gpsdata);
-int gps_read(struct gps_data_t * gpsdata, char * message,
-    int message_size);
+int gps_open(char* server, char* port, struct gps_data_t* gpsdata);
+int gps_read(struct gps_data_t* gpsdata, char* message, int message_size);
 
 uint8_t check_gps_connection(void) {
   struct gps_data_t gps_data;
@@ -33,11 +27,11 @@ uint8_t check_gps_connection(void) {
     return 1;
 }
 
-void raspi_setup(void){
+void raspi_setup(void) {
   struct gps_data_t gps_data;
   const char* chipname = "gpiochip0";
-  struct gpiod_chip *chip;
-  struct gpiod_line *line;
+  struct gpiod_chip* chip;
+  struct gpiod_line* line;
   chip = gpiod_chip_open_by_name(chipname);
   (void)gps_stream(&gps_data, WATCH_ENABLE | WATCH_JSON, NULL);
   if (!check_gps_connection) {
@@ -55,7 +49,6 @@ void raspi_setup(void){
     perror("Request line as output failed\n");
   }
 }
-void robot_signal_light(int) {
-}
+void robot_signal_light(int) {}
 
 #endif
