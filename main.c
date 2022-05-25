@@ -79,8 +79,9 @@ void robot_sigint(int x) {
 }
 
 void robot_value_init(wrbot *bot) {
-  bot->lat = 10.728520;
-  bot->lon = 99.383200;
+  float seed = 1.0;
+  bot->lat = (float) rand() / (float) (RAND_MAX / seed);
+  bot->lon = (float) rand() / (float) (RAND_MAX / seed);
 }
 
 void robot_loc_mock(wrbot *bot) {
