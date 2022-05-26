@@ -1,12 +1,12 @@
 #include "main.h"
 
 int run(wrbot *bot) {
-  const char* fname = "gps_list.txt";
-  char* gps_line = NULL;
+  const char *fname = "gps_list.txt";
+  char *gps_line = NULL;
   size_t len = 0;
   ssize_t read;
   static int round = 0;
-  FILE* gps_data = fopen(fname, "r");
+  FILE *gps_data = fopen(fname, "r");
   printf("file name is -> %s\n", fname);
   if (!gps_data) {
     printf("File opening failed\n");
@@ -29,11 +29,11 @@ int run(wrbot *bot) {
   return 0;
 }
 
-void compute(wrbot *bot, char* pos) {
+void compute(wrbot *bot, char *pos) {
   unsigned int x = 0;
   double wr_distance = 10.0000;
-  char* gps_array[2];
-  char* pos_tok = strtok(pos, ",");
+  char *gps_array[2];
+  char *pos_tok = strtok(pos, ",");
   while (pos_tok) {
     gps_array[x++] = pos_tok;
     pos_tok = strtok(NULL, " ");
@@ -57,9 +57,11 @@ void compute(wrbot *bot, char* pos) {
 double haversine(wrbot *bot, double lat_des, double lon_des) {
   double c;
   double lat_int_rad = degToRad(bot->lat), lat_des_rad = degToRad(lat_des);
-  double lat_delta = degToRad(lat_des - bot->lat), lon_delta = degToRad(lon_des - bot->lon);
-  double a = pow(sin(lat_delta / 2), 2) + cos(lat_int_rad) * cos(lat_des_rad) * pow(lon_delta / 2, 2);
-  return (c = ( 2 * atan2(sqrt(a), sqrt(1-a)))) != 0 ? EARTH_RAD * c : 0;
+  double lat_delta = degToRad(lat_des - bot->lat),
+         lon_delta = degToRad(lon_des - bot->lon);
+  double a = pow(sin(lat_delta / 2), 2) +
+             cos(lat_int_rad) * cos(lat_des_rad) * pow(lon_delta / 2, 2);
+  return (c = (2 * atan2(sqrt(a), sqrt(1 - a)))) != 0 ? EARTH_RAD * c : 0;
 }
 
 void robot_status(wrbot *bot) {
@@ -80,8 +82,8 @@ void robot_sigint(int x) {
 
 void robot_value_init(wrbot *bot) {
   float seed = 1.0;
-  bot->lat = (float) rand() / (float) (RAND_MAX / seed);
-  bot->lon = (float) rand() / (float) (RAND_MAX / seed);
+  bot->lat = (float)rand() / (float)(RAND_MAX / seed);
+  bot->lon = (float)rand() / (float)(RAND_MAX / seed);
 }
 
 void robot_loc_mock(wrbot *bot) {
