@@ -40,11 +40,12 @@ void compute(wrbot *bot, char *pos) {
   }
   while (wr_distance >= TOLERANCE_VALUE) {
     wr_distance = haversine(bot, atof(gps_array[0]), atof(gps_array[1]));
+    bot->speed = vspeed(wr_distance, bot->wr_distance, 1);
     bot->wr_distance = wr_distance;
     printf("distance to destination -> %f meters\n", wr_distance);
     robot_loc_mock(bot);
     robot_status(bot);
-    usleep(20);
+    sleep(1);
   }
   printf("=== arrived ===\n");
   printf("doing task\n");

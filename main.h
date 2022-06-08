@@ -41,8 +41,8 @@ typedef struct {
   double wr_distance;
 }wrbot;
 
-static inline double vspeed(double distance_a, double distance_b, int time) {
-  return (distance_b - distance_a) / time;
+static inline double vspeed(double distance_a, double distance_b, int timeSpend) {
+  return (distance_b - distance_a) / timeSpend;
 }
 
 static inline double degToRad(double angleInDegrees) {
