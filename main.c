@@ -88,8 +88,9 @@ void robot_value_init(wrbot *bot) {
 }
 
 void robot_loc_mock(wrbot *bot) {
-  bot->lat += 0.000001;
-  bot->lon += 0.000001;
+  float seed = 1.0;
+  bot->lat = (float)rand() / (float)(RAND_MAX / seed);
+  bot->lon = (float)rand() / (float)(RAND_MAX / seed);
 }
 
 int main(void) {
