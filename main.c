@@ -31,7 +31,7 @@ int run(wrbot *bot) {
 
 void compute(wrbot *bot, char *pos) {
   unsigned int x = 0;
-  double wr_distance = 10.0000;
+  double wr_distance = PLACEHOLDER;
   char *gps_array[2];
   char *pos_tok = strtok(pos, ",");
   while (pos_tok) {

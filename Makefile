@@ -7,7 +7,7 @@ CFLAGS = -std=c99 -Wall -Wextra -Wconversion -Wshadow\
 				 -pipe -march=native -mtune=native
 BIN = wrbot
 SRC = main.c
-OBJ = main.o
+OBJ = ${SRC:.c=.o}
 
 all: ${OBJ} ${BIN}
 .PHONY: all clean

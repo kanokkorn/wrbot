@@ -8,6 +8,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#define PLACEHOLDER 10
 #define TOLERANCE_VALUE 2.00
 #define EARTH_RAD 6.3781e6
 #define LEN 2
