@@ -3,11 +3,11 @@
  * Author: kanokkorn kornkankit <kanokorn@outlook.jp>
  */
 
-#ifdef __ARM64__
-#include <gpio.h>
-#include <gps.h>
-#include <math.h>
+#if defined(__FreeBSD__) && defined(__ARM64__)
 #include <unistd.h>
+#include <math.h>
+#include <libgpio.h>
+#include <gps.h>
 
 /* RASPI CHIPSET */
 #define CONSUMER "bcm"
