@@ -1,6 +1,7 @@
 /*
  * File: adv.h
  * Author: kanokkorn kornkankit <kanokorn@outlook.jp>
+ * FIFO implementation
  */
 
 #ifdef ADV_METHOD

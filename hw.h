@@ -1,6 +1,7 @@
 /*
  * File: hw.h
  * Author: kanokkorn kornkankit <kanokorn@outlook.jp>
+ * target: Raspberry Pi 3 on FreeBSD 13.1
  */
 
 #if defined(__FreeBSD__) && defined(__ARM64__)
