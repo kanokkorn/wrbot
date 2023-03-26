@@ -61,7 +61,9 @@ double haversine(wrbot *bot, double lat_des, double lon_des) {
   double lat_delta = degToRad(lat_des - bot->lat),
          lon_delta = degToRad(lon_des - bot->lon);
   double a = pow(sin(lat_delta / 2), 2) +
-             cos(lat_int_rad) * cos(lat_des_rad) * pow(lon_delta / 2, 2);
+             cos(lat_int_rad) * cos(lat_des_rad)
+             * pow(lon_delta / 2, 2);
+  cos(lat_int_rad) * cos(lat_des_rad) * pow(lon_delta / 2, 2);
   return (c = (2 * atan2(sqrt(a), sqrt(1 - a)))) != 0 ? EARTH_RAD * c : 0;
 }
 
