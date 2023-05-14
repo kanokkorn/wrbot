@@ -1,3 +1,9 @@
+/*
+ * TODO: -  implement linked-list for gps data
+ *       -  decode NMEA directly from gpsd sock
+ *       -  do code cleaning
+ */
+
 #include "main.h"
 
 int run(wrbot *bot) {
@@ -63,7 +69,7 @@ double haversine(wrbot *bot, double lat_des, double lon_des) {
   double a = pow(sin(lat_delta / 2), 2) +
              cos(lat_int_rad) * cos(lat_des_rad)
              * pow(lon_delta / 2, 2);
-  cos(lat_int_rad) * cos(lat_des_rad) * pow(lon_delta / 2, 2);
+  // cos(lat_int_rad) * cos(lat_des_rad) * pow(lon_delta / 2, 2);
   return (c = (2 * atan2(sqrt(a), sqrt(1 - a)))) != 0 ? EARTH_RAD * c : 0;
 }
 

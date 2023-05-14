@@ -1,13 +1,19 @@
+OPENMP = 0
+
 CC = clang
-LDFLAGS = -fuse-ld=lld --rtlib=compiler-rt
+LDFLAGS = -fuse-ld=lld
 LDLIBS = -lm
 CFLAGS = -std=c99 -Wall -Wextra -Wconversion -Wshadow\
          -Wdouble-promotion -fno-math-errno -pedantic\
 				 -fdelete-null-pointer-checks -fno-common -g \
 				 -pipe -march=native -mtune=native
 BIN = wrbot
-SRC = main.c
+SRC != ls *.c
 OBJ = ${SRC:.c=.o}
+
+.ifdef OPENMP
+CFLAGS += -fopenmp
+.endif
 
 all: ${OBJ} ${BIN}
 .PHONY: all clean
