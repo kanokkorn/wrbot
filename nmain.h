@@ -77,15 +77,15 @@
  */
 
 typedef struct {
+  double lat, lon;
+}gpsdata;
+
+typedef struct {
   gpsdata     current_pos;
   double      speed;
   double      angle;
   double      wr_distance;
 }vehicle;
-
-typedef struct {
-  double lat, lon;
-}gpsdata;
 
 
 /* convenient macros */
@@ -114,4 +114,3 @@ static inline int bmax(int a, int b) {
 }
 
 /* compute */
-double haversine(gpsdata *readval, vehicle *wrbot);
