@@ -1,20 +1,19 @@
 CC = clang
-LDLIBS = -lm -ldl -fopenmp
-CFLAGS = -std=c99 -Wall -Wextra -Wconversion -Wshadow\
-         -Wdouble-promotion -fno-math-errno -pedantic\
-				 -fdelete-null-pointer-checks -fno-common -g \
-				 -pipe -march=native -mtune=native
-
-SRC != ls *.c
-OBJ = ${SRC:.c=.o}
+LDLIBS = -lm
+# SRC != ls *.c
+# OBJ = ${SRC:.c=.o}
+SRC = nmain.c
+OBJ = nmain.o
 BIN = wrbot
 
 all: ${OBJ} ${BIN}
 .PHONY: all clean
 
 ${OBJ}: ${SRC}
-	${CC} ${CFLAGS} -c $<
+	${CC} -c $< -g
 ${BIN} : ${OBJ}
-	${CC} ${LDFLAGS} ${OBJ} -o $@ ${LDLIBS}
+	${CC} ${LDFLAGS} ${OBJ} -o $@ ${LDLIBS} -static
+release : ${OBJ}
+	${CC} -c ${SRC} && ${CC} -fuse-ld=lld ${OBJ} -static -o ${BIN} ${LDLIBS}
 clean:
 	rm -rf *.o ${BIN}
