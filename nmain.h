@@ -8,13 +8,12 @@
  *   - perform calculation between points
 */
 
-#define VERSION "0.2.1"
 #define _DEFAULT_SOURCE
 
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
-#endif /* !M_PI */
+#endif
 
 
 /*  ASCII color for terminal print  */
@@ -28,29 +27,28 @@
 #define RST   "\x1B[0m"
 
 
-/* random pre-define value */
+/* pre-define value */
 #define PLACEHOLDER 10
 #define EARTH_RAD 6.3781e6
+
 /* closest range for vehicle to stop before approaching target */
 #define TOLERANCE_VALUE 2.00
 
-
-/* set this only on actual hardware */
+/* header for interface (GPIO, USB) */
 #ifdef TARGET_HW
 #include "hw.h"
-#endif /* TARGET_HW */
+#endif
 
 
-/* path finding & stuff */
+/* path planning */
 #ifdef ADV_METHOD
 #include "adv.h"
 #endif
 
-/* database support */
+/* history, config and logging */
 #ifdef DATABASE
 #include "db.h"
 #endif 
-
 
 /* for developing on x86 */
 #if defined(__linux__) && defined(__x86_64__)
@@ -62,8 +60,7 @@
 #include <time.h>
 #include <math.h>
 #include <unistd.h>
-#endif /* Linux */
-
+#endif
 
 /* 
     TODO: support gpsfile & history with sqlite (if run completed)
@@ -76,9 +73,14 @@
        - can be load and off-load to SQL
  */
 
+/* NMEA data struct */
 typedef struct {
   double lat, lon;
 }gpsdata;
+
+typedef struct {
+  double lat, lon;
+}nmea_data;
 
 typedef struct {
   gpsdata     current_pos;
@@ -88,7 +90,7 @@ typedef struct {
 }vehicle;
 
 
-/* convenient macros */
+/* math function macros */
 static inline double vspeed(double distance_a, double distance_b, double timeSpend) {
   return (distance_b - distance_a) / timeSpend;
 }
@@ -112,5 +114,3 @@ static inline int bmin(int a, int b) {
 static inline int bmax(int a, int b) {
   return a - (( a - b) & (a - b) >> 31);
 }
-
-/* compute */

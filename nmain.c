@@ -1,20 +1,28 @@
 /* refactor, more organise */ 
 
 #include "nmain.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
 
-// typedef struct {
-//   double lat, lon;
-// }gpsdata;
+/*
+  typedef struct {
+  double lat, lon;
+  }gpsdata;
+*/
 
-// typedef struct {
-//   gpsdata     current_pos;
-//   double      speed;
-//   double      angle;
-//   double      wr_distance;
-// }vehicle;
+/*
+  typedef struct {
+    gpsdata     current_pos;
+    double      speed;
+    double      angle;
+    double      wr_distance;
+  }vehicle;
+*/
 
 enum manuver {
-  /* set of manuvering robot can do */
+  /* set of manuver robot can do */
   go_forward  ,
   turn_left   ,
   turn_right  ,
@@ -31,7 +39,7 @@ enum state {
 enum task {
   taking_picture,
   watering      ,
-  processing
+  processing    ,
 };
 
 double temp_val = 0.00;
@@ -67,6 +75,7 @@ void diff_graph(double val) {
   temp_val = val;
 }
 
+/* haversine formula */
 double haversine(gpsdata *a, gpsdata* b) {
   double c;
   double rad_lat_a = degToRad(a->lat);
@@ -77,13 +86,30 @@ double haversine(gpsdata *a, gpsdata* b) {
              cos(rad_lat_a) * cos(rad_lat_b)
              * pow(dt_lon / 2, 2);
   c = (2 * atan2(sqrt(x), sqrt(1 - x)));
-  if (c == 0.00) {
+  if (c >= 0.00) {
     return EARTH_RAD * c;
   } else {
     return 0.00;
   }
 }
 
+double genposition(void) {
+  return ((double)rand() / RAND_MAX) * 0.8;
+}
+
+/* run simulation */
 int main(void) {
+  srand(time(NULL));
+  printf("testing haversine function\n");
+  gpsdata *set_a = malloc(sizeof(gpsdata));
+  gpsdata *set_b = malloc(sizeof(gpsdata));
+  printf("[set a] lat:%f, lon: %f\n", set_a->lat, set_a->lon);
+  for (int i = 0; i < 100; ++i) {
+    set_a->lat = genposition(); set_a->lon = genposition();
+    set_b->lat = genposition(); set_b->lon = genposition();
+    printf("[round %3d] value a: [%f,%f] value b: [%f,%f] --> %.6f meters\n" , i+1,
+           set_a->lat, set_a->lon, set_b->lat, set_b->lon, haversine(set_a, set_b)
+           );
+  }
   return 0;
 }
