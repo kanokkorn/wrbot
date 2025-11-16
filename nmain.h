@@ -50,16 +50,13 @@
 #include "db.h"
 #endif 
 
-/* for developing on x86 */
-#if defined(__linux__) && defined(__x86_64__)
+#if defined(__linux__) || defined(__apple__)
 #define PLATFORM "x86_64 Linux"
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
-#include <math.h>
 #include <unistd.h>
+#include <math.h>
 #endif
 
 /* 

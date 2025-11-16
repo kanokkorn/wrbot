@@ -1,46 +1,41 @@
-/* refactor, more organise */ 
-
 #include "nmain.h"
+
 #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <unistd.h>
 
 /*
-  typedef struct {
-  double lat, lon;
-  }gpsdata;
+typedef struct {
+  gpsdata     current_pos;
+  double      speed;
+  double      angle;
+  double      wr_distance;
+}vehicle;
 */
 
 /*
-  typedef struct {
-    gpsdata     current_pos;
-    double      speed;
-    double      angle;
-    double      wr_distance;
-  }vehicle;
-*/
-
 enum manuver {
-  /* set of manuver robot can do */
   go_forward  ,
   turn_left   ,
   turn_right  ,
   go_bachward
 };
+*/
 
+/*
 enum state {
   offline ,
   ready   ,
   moving  ,
   working
 };
+*/
 
+/*
 enum task {
   taking_picture,
   watering      ,
   processing    ,
 };
+*/
 
 double temp_val = 0.00;
 
@@ -66,7 +61,7 @@ static void s_curve(double val) {
   printf("\n");
 }
 
-void diff_graph(double val) {
+static void diff_graph(double val) {
   double val_diff = val - temp_val;
   for (int x = 0; x < val_diff * 100; x++) {
     printf(":");
@@ -97,19 +92,20 @@ double genposition(void) {
   return ((double)rand() / RAND_MAX) * 0.8;
 }
 
-/* run simulation */
+// run simulation
 int main(void) {
   srand(time(NULL));
   printf("testing haversine function\n");
   gpsdata *set_a = malloc(sizeof(gpsdata));
   gpsdata *set_b = malloc(sizeof(gpsdata));
   printf("[set a] lat:%f, lon: %f\n", set_a->lat, set_a->lon);
-  for (int i = 0; i < 100; ++i) {
+  for (int i = 0; i < 2000000; ++i) {
     set_a->lat = genposition(); set_a->lon = genposition();
     set_b->lat = genposition(); set_b->lon = genposition();
     printf("[round %3d] value a: [%f,%f] value b: [%f,%f] --> %.6f meters\n" , i+1,
            set_a->lat, set_a->lon, set_b->lat, set_b->lon, haversine(set_a, set_b)
            );
   }
+  free(set_a); free(set_b);
   return 0;
 }

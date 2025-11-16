@@ -1,16 +1,17 @@
 /*
  * File: hw.h
  * Author: kanokkorn kornkankit <kanokorn@outlook.jp>
- * target: Raspberry Pi 3 on FreeBSD 13.1
+ * target: Raspberry Pi 3 with FreeBSD 13.2 & Debian 12
  */
 
-#if defined(__FreeBSD__) && defined(__ARM64__)
+#if defined(__UNIX__) && defined(__ARM64__)
 #include <unistd.h>
+#include <string.>
 #include <math.h>
 #include <libgpio.h>
 #include <gps.h>
 
-/* RASPI CHIPSET */
+/* RASPI CHIPSET - depend on model */
 #define CONSUMER "bcm"
 #define led_pin 23
 
@@ -28,6 +29,7 @@ uint8_t check_gps_connection(void) {
     return 1;
 }
 
+/* initial setup */
 void raspi_setup(void) {
   struct gps_data_t gps_data;
   const char* chipname = "gpiochip0";

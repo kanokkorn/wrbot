@@ -1,5 +1,6 @@
 CC = clang
 LDLIBS = -lm
+
 # SRC != ls *.c
 # OBJ = ${SRC:.c=.o}
 SRC = nmain.c
@@ -12,8 +13,8 @@ all: ${OBJ} ${BIN}
 ${OBJ}: ${SRC}
 	${CC} -c $< -g
 ${BIN} : ${OBJ}
-	${CC} ${LDFLAGS} ${OBJ} -o $@ ${LDLIBS} -static
+	${CC} ${LDFLAGS} ${OBJ} -O3 -o $@ ${LDLIBS} -static
 release : ${OBJ}
-	${CC} -c ${SRC} && ${CC} -fuse-ld=lld ${OBJ} -static -o ${BIN} ${LDLIBS}
+	${CC} -c ${SRC} && ${CC} -fuse-ld=mold ${OBJ} -static -o ${BIN} ${LDLIBS}
 clean:
 	rm -rf *.o ${BIN}

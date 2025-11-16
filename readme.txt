@@ -3,7 +3,7 @@ wrbot
   wrbot - read location point from text file, perform distance calculation and maybe execute command to GPIO
 
 
-hardware requirement
+Hardware requirement
 -------
   - Host        :   Mini-PC or SBCs that have GPIO
   - Controller  :   MCU with ADC, DAC built-in for sensor reading, drive motor
@@ -11,7 +11,16 @@ hardware requirement
   - 9-DoF IMU   :   Adafruit TDK InvenSense or separate digital compass, accelerator, gyro
 
 
-hardware diagram
+Software diagram
+----------------
+
+  wrbot daemon 
+  - listen on uds, tcp
+  - has local TUI client
+  - accept gps point
+
+
+Hardware diagram
 ----------------
     
                               i2c   ┌─────┐
@@ -33,19 +42,27 @@ hardware diagram
                               └───►│ ultrasonic │
                                    └────────────┘
 
-compile
+Compile
 -------
   build this project using `make`,  makefile is written with `bmake` compatible in mind but normal should also works
 
 
-optional build flags
+Optional build flags
 --------------------
   hardware   -  interface with hardware, primary written for raspberry pi gpio
-  adv_method -  advance methods like a* , PID, ext kalman filter ... etc
+  adv_method -  advance methods like a* , PID, ext kalman filter ... Etc
   database   -  save history, mapping location, configuration
 
 
-required for options build
+Required for options build
 --------------------------
   - libsqlite3-dev
   - libgpiod-dev
+
+
+Data flow
+---------
+
+input: list of coordinate in lat, lon
+process: compute distance between to point, check if getting closer to next coordinate in list
+output: execute command controlling speed and angle heading to coordinate
