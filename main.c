@@ -1,110 +1,122 @@
-/*
- * TODO: -  implement linked-list for gps data
- *       -  decode NMEA directly from gpsd sock
- *       -  do code cleaning
- */
-
 #include "main.h"
 
-int run(wrbot *bot) {
-  const char *fname = "gps_list.txt";
-  char *gps_line = NULL;
-  size_t len = 0;
-  ssize_t read;
-  static int round = 0;
-  FILE *gps_data = fopen(fname, "r");
-  printf("file name is -> %s\n", fname);
-  if (!gps_data) {
-    printf("File opening failed\n");
-    exit(EXIT_FAILURE);
-  }
-  while ((read = getline(&gps_line, &len, gps_data)) != -1) {
-    printf("round #%d\n", round);
-    compute(bot, gps_line);
-    round++;
-  }
-  if (ferror(gps_data)) {
-    printf("I/O error while reading\n");
-  } else if (feof(gps_data)) {
-    printf("End of file\n");
-  }
-  fclose(gps_data);
-  if (gps_line) {
-    free(gps_line);
-  }
-  return 0;
+int run_simulation(robot_t *bot) {
+    const char *fname = "gps_list.txt";
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    int round = 0;
+
+    FILE *gps_file = fopen(fname, "r");
+    if (!gps_file) {
+        perror("Error opening GPS file");
+        return 1;
+    }
+
+    printf("Reading waypoints from: %s\n", fname);
+    while ((read = getline(&line, &len, gps_file)) != -1) {
+        printf("Processing waypoint #%d\n", ++round);
+        process_waypoint(bot, line);
+    }
+
+    if (ferror(gps_file)) {
+        perror("I/O error while reading");
+    }
+
+    fclose(gps_file);
+    if (line) {
+        free(line);
+    }
+    return 0;
 }
 
-void compute(wrbot *bot, char *pos) {
-  unsigned int x = 0;
-  double wr_distance = PLACEHOLDER;
-  char *gps_array[2];
-  char *pos_tok = strtok(pos, ",");
-  while (pos_tok) {
-    gps_array[x++] = pos_tok;
-    pos_tok = strtok(NULL, " ");
-  }
-  while (wr_distance >= TOLERANCE_VALUE) {
-    wr_distance = haversine(bot, atof(gps_array[0]), atof(gps_array[1]));
-    bot->speed = vspeed(wr_distance, bot->wr_distance, 1);
-    bot->wr_distance = wr_distance;
-    printf("distance to destination -> %f meters\n", wr_distance);
-    robot_loc_mock(bot);
-    robot_status(bot);
+void process_waypoint(robot_t *bot, char *waypoint_str) {
+    char *lat_str = strtok(waypoint_str, ",");
+    char *lon_str = strtok(NULL, " ");
+
+    if (!lat_str || !lon_str) {
+        fprintf(stderr, "Invalid waypoint format: %s\n", waypoint_str);
+        return;
+    }
+
+    double dest_lat = atof(lat_str);
+    double dest_lon = atof(lon_str);
+    bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
+
+    while (bot->distance_to_target >= TOLERANCE) {
+        double prev_distance = bot->distance_to_target;
+        bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
+        bot->speed = calculate_speed(bot->distance_to_target, prev_distance, 1);
+
+        print_robot_status(bot);
+        update_robot_mock_position(bot);
+        sleep(1);
+    }
+
+    printf("--- Waypoint reached ---\n");
+    sleep(2); // Simulate task execution
+    printf("Task finished. Moving to next waypoint...\n");
     sleep(1);
-  }
-  printf("=== arrived ===\n");
-  printf("doing task\n");
-  /* task */
-  sleep(20);
-  printf("done...\n");
-  sleep(5);
 }
 
-double haversine(wrbot *bot, double lat_des, double lon_des) {
-  double c;
-  double lat_int_rad = degToRad(bot->lat), lat_des_rad = degToRad(lat_des);
-  double lat_delta = degToRad(lat_des - bot->lat),
-         lon_delta = degToRad(lon_des - bot->lon);
-  double a = pow(sin(lat_delta / 2), 2) +
-             cos(lat_int_rad) * cos(lat_des_rad)
-             * pow(lon_delta / 2, 2);
-  // cos(lat_int_rad) * cos(lat_des_rad) * pow(lon_delta / 2, 2);
-  return (c = (2 * atan2(sqrt(a), sqrt(1 - a)))) != 0 ? EARTH_RAD * c : 0;
+double haversine(const robot_t *bot, double dest_lat, double dest_lon) {
+    double lat_rad = deg_to_rad(bot->position.lat);
+    double dest_lat_rad = deg_to_rad(dest_lat);
+    double d_lat = deg_to_rad(dest_lat - bot->position.lat);
+    double d_lon = deg_to_rad(dest_lon - bot->position.lon);
+
+    double a = pow(sin(d_lat / 2), 2) + cos(lat_rad) * cos(dest_lat_rad) * pow(sin(d_lon / 2), 2);
+    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    return EARTH_RADIUS * c;
 }
 
-void robot_status(wrbot *bot) {
-  printf("\e[1;1H\e[2J");
-  printf("<-- status -->\n");
-  printf("current lat  : %f \n", bot->lat);
-  printf("current lon  : %f \n", bot->lon);
-  printf("current speed: %f \n", bot->speed);
-  printf("current angle: %f \n", bot->angle);
-  printf("distance to destination -> %f meters\n", bot->wr_distance);
+void print_robot_status(const robot_t *bot) {
+    printf("\033[2J\033[H"); // Clear screen
+    printf("--- Robot Status ---\n");
+    printf("Position:  (Lat: %f, Lon: %f)\n", bot->position.lat, bot->position.lon);
+    printf("Speed:     %f m/s\n", bot->speed);
+    printf("Angle:     %f degrees\n", bot->angle);
+    printf("Distance:  %f meters\n", bot->distance_to_target);
+    printf("--------------------\n");
 }
 
-void robot_sigint(int x) {
-  printf("interrupted... stop!\n");
-  /* stop all driver */
-  exit(x);
+void handle_interrupt(int signal) {
+    printf("\nInterrupt received, stopping robot...\n");
+    exit(signal);
 }
 
-void robot_value_init(wrbot *bot) {
-  float seed = 1.0;
-  bot->lat = (float)rand() / (float)(RAND_MAX / seed);
-  bot->lon = (float)rand() / (float)(RAND_MAX / seed);
+void initialize_robot(robot_t *bot) {
+    srand(time(NULL));
+    bot->position.lat = (double)rand() / RAND_MAX * 180.0 - 90.0;
+    bot->position.lon = (double)rand() / RAND_MAX * 360.0 - 180.0;
+    bot->speed = 0.0;
+    bot->angle = 0.0;
+    bot->distance_to_target = 0.0;
 }
 
-void robot_loc_mock(wrbot *bot) {
-  float seed = 1.0;
-  bot->lat = (float)rand() / (float)(RAND_MAX / seed);
-  bot->lon = (float)rand() / (float)(RAND_MAX / seed);
+void update_robot_mock_position(robot_t *bot) {
+    // Simulate movement
+    bot->position.lat += (double)rand() / RAND_MAX * 0.001 - 0.0005;
+    bot->position.lon += (double)rand() / RAND_MAX * 0.001 - 0.0005;
 }
 
 int main(void) {
-  wrbot *bot = malloc(sizeof(wrbot));
-  robot_value_init(bot);
-  signal(SIGINT, robot_sigint);
-  run(bot) == 0 ? free(bot) : robot_sigint(1);
-  return 0;
+    robot_t *bot = malloc(sizeof(robot_t));
+    if (!bot) {
+        perror("Failed to allocate memory for robot");
+        return 1;
+    }
+
+    initialize_robot(bot);
+    signal(SIGINT, handle_interrupt);
+
+    if (run_simulation(bot) != 0) {
+        fprintf(stderr, "Simulation failed.\n");
+        free(bot);
+        return 1;
+    }
+
+    free(bot);
+    return 0;
 }

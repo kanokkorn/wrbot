@@ -1,67 +1,61 @@
+/*
+ * wrbot - haversine implementation for a farming rover
+ */
+
+#ifndef MAIN_H
+#define MAIN_H
+
 #define _DEFAULT_SOURCE
-
-#ifndef __has_builtin
-  #define __has__builtin(x) 0
-#endif
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-#define PLACEHOLDER 10
-#define TOLERANCE_VALUE 2.00
-#define EARTH_RAD 6.3781e6
-#define LEN 2
-#define TOTAL LEN * 1000
-
-#define BUF 10
-#define BUFSIZE
-
-#ifdef TARGET_HW
-#include "hw.h"
-#endif
-
-#ifdef ADV_METHOD
-#include "adv.h"
-#endif
-
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
 #include <math.h>
 #include <unistd.h>
+#include <time.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
+/* Constants */
+#define TOLERANCE         2.0
+#define EARTH_RADIUS      6371000.0 // meters
+
+/* GPS coordinate */
 typedef struct {
-  double lat;
-  double lon;
-  double speed;
-  double angle;
-  double wr_distance;
-}wrbot;
+    double lat;
+    double lon;
+} gps_t;
 
-static inline double vspeed(double distance_a, double distance_b, int timeSpend) {
-  return (distance_b - distance_a) / timeSpend;
+/* Robot state */
+typedef struct {
+    gps_t  position;
+    double speed;
+    double angle;
+    double distance_to_target;
+} robot_t;
+
+/* Inline math functions */
+static inline double calculate_speed(double dist_a, double dist_b, int time) {
+    return (dist_b - dist_a) / time;
 }
 
-static inline double degToRad(double angleInDegrees) {
-  return angleInDegrees * M_PI / 180;
+static inline double deg_to_rad(double degrees) {
+    return degrees * M_PI / 180.0;
 }
 
-static inline double radToDeg(double angleInRadians) {
-  return angleInRadians * 180 / M_PI;
+static inline double rad_to_deg(double radians) {
+    return radians * 180.0 / M_PI;
 }
 
-/* robot */
-void robot_status(wrbot *bot);
-void robot_value_init(wrbot *bot);
-void robot_loc_mock(wrbot *bot);
-void robot_failsafe(double);
-void robot_sigint(int);
+/* Function Prototypes */
+int run_simulation(robot_t *bot);
+void process_waypoint(robot_t *bot, char *waypoint_str);
+double haversine(const robot_t *bot, double dest_lat, double dest_lon);
+void print_robot_status(const robot_t *bot);
+void initialize_robot(robot_t *bot);
+void update_robot_mock_position(robot_t *bot);
+void handle_interrupt(int signal);
 
-/* prototypes */
-int run(wrbot *bot);
-void compute(wrbot *bot, char*);
-double haversine(wrbot *bot, double, double);
+#endif /* MAIN_H */
