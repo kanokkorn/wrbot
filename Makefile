@@ -7,7 +7,7 @@ PREFIX  ?= /usr/local
 
 # Project files
 PROG = wrbot
-SRCS = main.c
+SRCS = main.c fsm.c
 OBJS = ${SRCS:.c=.o}
 
 # Targets

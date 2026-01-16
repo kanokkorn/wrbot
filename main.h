@@ -13,6 +13,7 @@
 #include <math.h>
 #include <unistd.h>
 #include <time.h>
+#include "fsm.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -34,6 +35,7 @@ typedef struct {
     double speed;
     double angle;
     double distance_to_target;
+    fsm_t  fsm;
 } robot_t;
 
 /* Inline math functions */
