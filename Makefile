@@ -1,19 +1,33 @@
-CC = clang
-LDLIBS = -lm
-# SRC != ls *.c
-# OBJ = ${SRC:.c=.o}
-SRC = nmain.c
-OBJ = nmain.o
-BIN = wrbot
+# Compiler and flags
+CC      ?= gcc
+CFLAGS  += -Wall -Wextra -g -std=c99
+LDFLAGS +=
+LDLIBS  += -lm
+PREFIX  ?= /usr/local
 
-all: ${OBJ} ${BIN}
-.PHONY: all clean
+# Project files
+PROG = wrbot
+SRCS = main.c
+OBJS = ${SRCS:.c=.o}
 
-${OBJ}: ${SRC}
-	${CC} -c $< -g
-${BIN} : ${OBJ}
-	${CC} ${LDFLAGS} ${OBJ} -o $@ ${LDLIBS} -static
-release : ${OBJ}
-	${CC} -c ${SRC} && ${CC} -fuse-ld=lld ${OBJ} -static -o ${BIN} ${LDLIBS}
+# Targets
+all: ${PROG}
+
+.c.o:
+	${CC} ${CFLAGS} -c $< -o $@
+
+${PROG}: ${OBJS}
+	${CC} ${LDFLAGS} -o $@ ${OBJS} ${LDLIBS}
+
+# Phony targets
+.PHONY: all clean install uninstall
+
 clean:
-	rm -rf *.o ${BIN}
+	rm -f ${PROG} ${OBJS}
+
+install: all
+	install -d ${DESTDIR}${PREFIX}/bin
+	install -m 755 ${PROG} ${DESTDIR}${PREFIX}/bin
+
+uninstall:
+	rm -f ${DESTDIR}${PREFIX}/bin/${PROG}
