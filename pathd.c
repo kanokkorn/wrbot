@@ -39,7 +39,15 @@ int pathd_run_simulation(robot_t *bot) {
     double dest_lon = atof(lon_str);
     bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
 
-    while (bot->distance_to_target >= TOLERANCE) {
+    while (bot->distance_to_target >= TOLERANCE && !stop_signal) {
+      if (bot->fsm.current_state != ROBOT_STATE_MOVING) {
+        print_robot_status(bot);
+        printf("[pathd] Robot is %s. Waiting for EXEC command...\n",
+               (bot->fsm.current_state == ROBOT_STATE_IDLE) ? "IDLE" : "WORKING");
+        sleep(2);
+        continue;
+      }
+
       double prev_distance = bot->distance_to_target;
       bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
 
@@ -52,6 +60,8 @@ int pathd_run_simulation(robot_t *bot) {
       update_robot_mock_position(bot, dest_lat, dest_lon);
       sleep(1);
     }
+
+    if (stop_signal) break;
 
     printf("[pathd] --- Waypoint reached ---\n");
     sleep(2);

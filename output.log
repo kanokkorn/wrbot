@@ -1,0 +1,137 @@
+FSM initialized. Current state: IDLE
+--- Starting self-check subroutine ---
+Checking GPS module... OK
+Checking IMU... OK
+Checking MCU connection... OK
+Initial Position: Lat 10.999500, Lon 10.999500
+--- Self-check completed successfully ---
+
+[pathd] Initializing Path Planning Daemon...
+[msgd] Initializing MCU Communication Daemon (UART/I2C)...
+[comm] Initializing Remote Control Daemon (TCP/IP)...
+
+Press Enter to start simulation...[pathd] Reading waypoints from: gps_list.txt
+[pathd] Processing waypoint #1
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999500, Lon: 10.999500)
+Speed:     1.00 m/s
+Angle:     0.00 degrees
+Distance:  77.91 meters
+--------------------
+[comm] Remote Control Daemon (PID: 3160) is running...
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999502, Lon: 10.999504)
+Speed:     1.00 m/s
+Angle:     44.47 degrees
+Distance:  77.47 meters
+--------------------
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999505, Lon: 10.999510)
+Speed:     0.71 m/s
+Angle:     44.37 degrees
+Distance:  76.76 meters
+--------------------
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999511, Lon: 10.999510)
+Speed:     1.00 m/s
+Angle:     44.20 degrees
+Distance:  76.32 meters
+--------------------
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999520, Lon: 10.999514)
+Speed:     1.10 m/s
+Angle:     44.51 degrees
+Distance:  75.22 meters
+--------------------
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999525, Lon: 10.999520)
+Speed:     0.80 m/s
+Angle:     44.85 degrees
+Distance:  74.42 meters
+--------------------
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999530, Lon: 10.999520)
+Speed:     1.00 m/s
+Angle:     44.81 degrees
+Distance:  74.01 meters
+--------------------
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999533, Lon: 10.999523)
+Speed:     0.54 m/s
+Angle:     45.05 degrees
+Distance:  73.47 meters
+--------------------
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999536, Lon: 10.999525)
+Speed:     1.00 m/s
+Angle:     45.07 degrees
+Distance:  73.10 meters
+------------[comm] RESET received: resetting position and task now
+[comm] SAVE received: saving new position and task now
+[comm] RESET received: resetting position and task now
+[comm] EXEC received: executing stored tasks
+[comm] EXEC received: executing stored tasks
+[comm] EXEC received: executing stored tasks
+
+Angle:     45.09 degrees
+Distance:  71.88 meters
+--------------------
+[pathd] Robot is IDLE. Waiting for EXEC command...
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999555, Lon: 10.999539)
+Speed:     1.22 m/s
+Angle:     45.09 degrees
+Distance:  71.88 meters
+--------------------
+[pathd] Robot is IDLE. Waiting for EXEC command...
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999555, Lon: 10.999539)
+Speed:     1.22 m/s
+Angle:     45.09 degrees
+Distance:  71.88 meters
+--------------------
+[pathd] Robot is IDLE. Waiting for EXEC command...
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999555, Lon: 10.999539)
+Speed:     1.22 m/s
+Angle:     45.09 degrees
+Distance:  71.88 meters
+--------------------
+[pathd] Robot is IDLE. Waiting for EXEC command...
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999555, Lon: 10.999539)
+Speed:     1.22 m/s
+Angle:     45.09 degrees
+Distance:  71.88 meters
+--------------------
+[pathd] Robot is IDLE. Waiting for EXEC command...
+[comm] STOP received: stopping now
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999555, Lon: 10.999539)
+Speed:     0.00 m/s
+Angle:     45.09 degrees
+Distance:  71.88 meters
+--------------------
+[pathd] Robot is IDLE. Waiting for EXEC command...
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999555, Lon: 10.999539)
+Speed:     0.00 m/s
+Angle:     45.09 degrees
+Distance:  71.88 meters
+--------------------
+[pathd] Robot is IDLE. Waiting for EXEC command...
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999555, Lon: 10.999539)
+Speed:     0.00 m/s
+Angle:     45.09 degrees
+Distance:  71.88 meters
+--------------------
+[pathd] Robot is IDLE. Waiting for EXEC command...
+[2J[H--- Robot Status ---
+Position:  (Lat: 10.999555, Lon: 10.999539)
+Speed:     0.00 m/s
+Angle:     45.09 degrees
+Distance:  71.88 meters
+--------------------
+[pathd] Robot is IDLE. Waiting for EXEC command...
+[comm] Stopping Remote Control Daemon (PID: 3160)...

@@ -52,6 +52,8 @@ static inline double rad_to_deg(double radians) {
     return radians * 180.0 / M_PI;
 }
 
+extern volatile sig_atomic_t stop_signal;
+
 /* Function Prototypes */
 void print_robot_status(const robot_t *bot);
 void initialize_robot(robot_t *bot);
