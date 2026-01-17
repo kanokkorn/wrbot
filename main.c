@@ -3,6 +3,7 @@
 #include "pathd.h"
 #include "msgd.h"
 #include "comm.h"
+#include <sys/mman.h>
 
 int self_check(robot_t *bot) {
     printf("--- Starting self-check subroutine ---\n");
@@ -32,9 +33,10 @@ void print_robot_status(const robot_t *bot) {
     printf("--------------------\n");
 }
 
+volatile sig_atomic_t stop_signal = 0;
 void handle_interrupt(int signal) {
-    printf("\nInterrupt received, stopping robot...\n");
-    exit(signal);
+    (void)signal;
+    stop_signal = 1;
 }
 
 void initialize_robot(robot_t *bot) {
@@ -49,9 +51,9 @@ void initialize_robot(robot_t *bot) {
 }
 
 int main(void) {
-    robot_t *bot = malloc(sizeof(robot_t));
-    if (!bot) {
-        perror("Failed to allocate memory for robot");
+    robot_t *bot = mmap(NULL, sizeof(robot_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    if (bot == MAP_FAILED) {
+        perror("mmap failed");
         return 1;
     }
 
@@ -60,7 +62,7 @@ int main(void) {
 
     if (self_check(bot) != 0) {
         fprintf(stderr, "Self-check failed. Exiting.\n");
-        free(bot);
+        munmap(bot, sizeof(robot_t));
         return 1;
     }
 
@@ -73,20 +75,28 @@ int main(void) {
         fprintf(stderr, "Failed to initialize msgd.\n");
     }
 
-    if (comm_init() != 0) {
+    if (comm_init(bot) != 0) {
         fprintf(stderr, "Failed to initialize comm.\n");
     }
 
     printf("\nPress Enter to start simulation...");
     getchar();
 
+    // In a real application, we would check stop_signal in the main loop.
+    // Here, pathd_run_simulation has the loop, so we should pass it or handle it there.
+
+    // Set initial state to MOVING to start simulation
+    bot->fsm.current_state = ROBOT_STATE_MOVING;
+
     // Run simulation (pathd manages the main loop for now)
     if (pathd_run_simulation(bot) != 0) {
         fprintf(stderr, "Simulation failed.\n");
-        free(bot);
+        comm_cleanup();
+        munmap(bot, sizeof(robot_t));
         return 1;
     }
 
-    free(bot);
+    comm_cleanup();
+    munmap(bot, sizeof(robot_t));
     return 0;
 }
