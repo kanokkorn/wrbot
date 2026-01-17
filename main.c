@@ -45,6 +45,7 @@ void initialize_robot(robot_t *bot) {
     bot->speed = 0.0;
     bot->angle = 0.0;
     bot->distance_to_target = 0.0;
+    fsm_init(&bot->fsm);
 }
 
 int main(void) {
