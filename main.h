@@ -40,7 +40,8 @@ typedef struct {
 
 /* Inline math functions */
 static inline double calculate_speed(double dist_a, double dist_b, int time) {
-    return (dist_b - dist_a) / time;
+    if (time == 0) return 0;
+    return (dist_b - dist_a) / (double)time;
 }
 
 static inline double deg_to_rad(double degrees) {
@@ -52,12 +53,9 @@ static inline double rad_to_deg(double radians) {
 }
 
 /* Function Prototypes */
-int run_simulation(robot_t *bot);
-void process_waypoint(robot_t *bot, char *waypoint_str);
-double haversine(const robot_t *bot, double dest_lat, double dest_lon);
 void print_robot_status(const robot_t *bot);
 void initialize_robot(robot_t *bot);
-void update_robot_mock_position(robot_t *bot);
 void handle_interrupt(int signal);
+int self_check(robot_t *bot);
 
 #endif /* MAIN_H */
