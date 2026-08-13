@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
 
 int pathd_init(void) {
   printf("[pathd] Initializing Path Planning Daemon...\n");
@@ -12,38 +15,60 @@ int pathd_init(void) {
 
 int pathd_run_simulation(robot_t *bot) {
   const char *fname = "gps_list.txt";
-  char *line = NULL;
-  size_t len = 0;
-  ssize_t read_bytes;
-  int round = 0;
-
-  FILE *gps_file = fopen(fname, "r");
-  if (!gps_file) {
-    perror("Error opening GPS file");
+  int fd = open(fname, O_RDONLY);
+  if (fd < 0) {
+    perror("[pathd] Error opening GPS file");
     return 1;
   }
 
-  printf("[pathd] Reading waypoints from: %s\n", fname);
-  while ((read_bytes = getline(&line, &len, gps_file)) != -1) {
-    printf("[pathd] Processing waypoint #%d\n", ++round);
+  struct stat sb;
+  if (fstat(fd, &sb) < 0) {
+    perror("[pathd] fstat failed");
+    close(fd);
+    return 1;
+  }
 
-    char *lat_str = strtok(line, ",");
-    char *lon_str = strtok(NULL, " \n\r");
+  char *addr = mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  close(fd);
 
-    if (!lat_str || !lon_str) {
-      fprintf(stderr, "[pathd] Invalid waypoint format\n");
+  if (addr == MAP_FAILED) {
+    perror("[pathd] mmap failed");
+    return 1;
+  }
+
+  printf("[pathd] Reading waypoints using memory map from: %s\n", fname);
+  int round = 0;
+  const char *curr = addr;
+  const char *limit = addr + sb.st_size;
+
+  while (curr < limit && !stop_signal) {
+    while (curr < limit && (*curr == ' ' || *curr == '\n' || *curr == '\r' || *curr == '\t')) {
+      curr++;
+    }
+    if (curr >= limit) break;
+
+    char *next;
+    double dest_lat = strtod(curr, &next);
+    if (curr == next || *next != ',') {
+      while (curr < limit && *curr != '\n') curr++;
       continue;
     }
+    curr = next + 1;
+    double dest_lon = strtod(curr, &next);
+    if (curr == next) {
+      while (curr < limit && *curr != '\n') curr++;
+      continue;
+    }
+    curr = next;
 
-    double dest_lat = atof(lat_str);
-    double dest_lon = atof(lon_str);
+    printf("[pathd] Processing waypoint #%d\n", ++round);
+    fsm_handle_event(&bot->fsm, ROBOT_EVENT_WAYPOINT_RECEIVED);
     bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
 
     while (bot->distance_to_target >= TOLERANCE && !stop_signal) {
       if (bot->fsm.current_state != ROBOT_STATE_MOVING) {
         print_robot_status(bot);
-        printf("[pathd] Robot is %s. Waiting for EXEC command...\n",
-               (bot->fsm.current_state == ROBOT_STATE_IDLE) ? "IDLE" : "WORKING");
+        printf("[pathd] Robot is not MOVING. Waiting for state update...\n");
         sleep(2);
         continue;
       }
@@ -51,10 +76,9 @@ int pathd_run_simulation(robot_t *bot) {
       double prev_distance = bot->distance_to_target;
       bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
 
-      // Avoid negative speed if we overshot a bit or due to noise
       double speed = calculate_speed(bot->distance_to_target, prev_distance, 1);
       bot->speed = (speed < 0) ? -speed : speed;
-      if (bot->speed < 0.5) bot->speed = 1.0; // Keep moving
+      if (bot->speed < 0.5) bot->speed = 1.0;
 
       print_robot_status(bot);
       update_robot_mock_position(bot, dest_lat, dest_lon);
@@ -64,14 +88,13 @@ int pathd_run_simulation(robot_t *bot) {
     if (stop_signal) break;
 
     printf("[pathd] --- Waypoint reached ---\n");
-    sleep(2);
-    printf("[pathd] Task finished. Moving to next waypoint...\n");
+    fsm_handle_event(&bot->fsm, ROBOT_EVENT_WAYPOINT_REACHED);
+    sleep(1);
+    printf("[pathd] Task finished. Transitioning state...\n");
+    fsm_handle_event(&bot->fsm, ROBOT_EVENT_TASK_COMPLETED);
     sleep(1);
   }
 
-  fclose(gps_file);
-  if (line) {
-    free(line);
-  }
+  munmap(addr, sb.st_size);
   return 0;
 }
