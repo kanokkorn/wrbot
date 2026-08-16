@@ -6,13 +6,13 @@
 #define MAIN_H
 
 #define _DEFAULT_SOURCE
+#include <math.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h>
-#include <math.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 #include "fsm.h"
 
 #ifndef M_PI
@@ -20,36 +20,36 @@
 #endif
 
 /* Constants */
-#define TOLERANCE         2.0
-#define EARTH_RADIUS      6371000.0 // meters
+#define TOLERANCE    2.0
+#define EARTH_RADIUS 6371000.0 // meters
 
 /* GPS coordinate */
 typedef struct {
-    double lat;
-    double lon;
+  double lat;
+  double lon;
 } gps_t;
 
 /* Robot state */
 typedef struct {
-    gps_t  position;
-    double speed;
-    double angle;
-    double distance_to_target;
-    fsm_t  fsm;
+  gps_t position;
+  double speed;
+  double angle;
+  double distance_to_target;
+  fsm_t fsm;
 } robot_t;
 
 /* Inline math functions */
 static inline double calculate_speed(double dist_a, double dist_b, int time) {
-    if (time == 0) return 0;
-    return (dist_b - dist_a) / (double)time;
+  if (time == 0) return 0;
+  return (dist_b - dist_a) / (double)time;
 }
 
 static inline double deg_to_rad(double degrees) {
-    return degrees * M_PI / 180.0;
+  return degrees * M_PI / 180.0;
 }
 
 static inline double rad_to_deg(double radians) {
-    return radians * 180.0 / M_PI;
+  return radians * 180.0 / M_PI;
 }
 
 extern volatile sig_atomic_t stop_signal;
