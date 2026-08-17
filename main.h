@@ -7,14 +7,13 @@
 
 #define _POSIX_C_SOURCE 200809L
 #define _DEFAULT_SOURCE
-
+#include <math.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h>
-#include <math.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 #include "fsm.h"
 
 #ifndef M_PI
@@ -33,11 +32,11 @@ typedef struct {
 
 /* Robot state */
 typedef struct {
-  gps_t  position;
+  gps_t position;
   double speed;
   double angle;
   double distance_to_target;
-  fsm_t  fsm;
+  fsm_t fsm;
 } robot_t;
 
 /* Inline math functions */
