@@ -5,7 +5,9 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#define _POSIX_C_SOURCE 200809L
 #define _DEFAULT_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,8 +22,8 @@
 #endif
 
 /* Constants */
-#define TOLERANCE         2.0
-#define EARTH_RADIUS      6371000.0 // meters
+#define TOLERANCE    2.0
+#define EARTH_RADIUS 6371000.0 // meters
 
 /* GPS coordinate */
 typedef struct {

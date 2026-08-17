@@ -6,6 +6,13 @@
 #include "comm.h"
 #include <sys/mman.h>
 
+volatile sig_atomic_t stop_signal = 0;
+
+void handle_interrupt(int signal) {
+  (void)signal;
+  stop_signal = 1;
+}
+
 int self_check(robot_t *bot) {
   printf("--- Starting self-check subroutine ---\n");
   if (!bot) return 1;

@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L
 #include "pathd.h"
 #include "navigate.h"
 #include <stdio.h>
@@ -65,8 +66,6 @@ int pathd_run_simulation(robot_t *bot) {
     fsm_handle_event(&bot->fsm, ROBOT_EVENT_WAYPOINT_RECEIVED);
     bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
 
-    while (bot->distance_to_target >= TOLERANCE && !stop_signal) {
-      if (bot->fsm.current_state != ROBOT_STATE_MOVING) {
         print_robot_status(bot);
         printf("[pathd] Robot is not MOVING. Waiting for state update...\n");
         sleep(2);
@@ -80,8 +79,9 @@ int pathd_run_simulation(robot_t *bot) {
       bot->speed = (speed < 0) ? -speed : speed;
       if (bot->speed < 0.5) bot->speed = 1.0;
 
-      print_robot_status(bot);
-      update_robot_mock_position(bot, dest_lat, dest_lon);
+      printf("[pathd] --- Waypoint reached ---\n");
+      sleep(2);
+      printf("[pathd] Task finished. Moving to next waypoint...\n");
       sleep(1);
     }
 
