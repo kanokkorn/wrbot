@@ -8,8 +8,10 @@ double haversine(const robot_t *bot, double dest_lat, double dest_lon) {
   double d_lat = deg_to_rad(dest_lat - bot->position.lat);
   double d_lon = deg_to_rad(dest_lon - bot->position.lon);
 
-  double a = pow(sin(d_lat / 2), 2) + cos(lat_rad) * cos(dest_lat_rad) * pow(sin(d_lon / 2), 2);
-  double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+  double sin_dlat = sin(d_lat / 2.0);
+  double sin_dlon = sin(d_lon / 2.0);
+  double a = sin_dlat * sin_dlat + cos(lat_rad) * cos(dest_lat_rad) * sin_dlon * sin_dlon;
+  double c = 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
 
   return EARTH_RADIUS * c;
 }
@@ -27,24 +29,18 @@ double calculate_bearing(double lat1, double lon1, double lat2, double lon2) {
 
 void update_robot_mock_position(robot_t *bot, double dest_lat, double dest_lon) {
   if (bot->speed <= 0) {
-    bot->speed = 1.0; // Default speed for simulation if not set
+    bot->speed = 1.0;
   }
 
   double bearing = calculate_bearing(bot->position.lat, bot->position.lon, dest_lat, dest_lon);
   bot->angle = bearing;
 
-  // Constant for meters per degree latitude
   const double METERS_PER_DEGREE = 111111.0;
-
-  double dist_to_move = bot->speed; // move 'speed' meters (assuming 1 sec interval)
+  double dist_to_move = bot->speed;
 
   double d_lat = (dist_to_move * cos(deg_to_rad(bearing))) / METERS_PER_DEGREE;
   double d_lon = (dist_to_move * sin(deg_to_rad(bearing))) / (METERS_PER_DEGREE * cos(deg_to_rad(bot->position.lat)));
 
-  bot->position.lat += d_lat;
-  bot->position.lon += d_lon;
-
-  // Add a little bit of noise
-  bot->position.lat += ((double)rand() / RAND_MAX * 0.00001) - 0.000005;
-  bot->position.lon += ((double)rand() / RAND_MAX * 0.00001) - 0.000005;
+  bot->position.lat += d_lat + (((double)rand() / RAND_MAX * 0.00001) - 0.000005);
+  bot->position.lon += d_lon + (((double)rand() / RAND_MAX * 0.00001) - 0.000005);
 }
