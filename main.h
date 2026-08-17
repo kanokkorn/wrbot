@@ -5,6 +5,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#define _POSIX_C_SOURCE 200809L
 #define _DEFAULT_SOURCE
 #include <math.h>
 #include <signal.h>

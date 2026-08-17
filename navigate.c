@@ -9,7 +9,9 @@ double haversine(const robot_t *bot, double dest_lat, double dest_lon) {
   double d_lat = deg_to_rad(dest_lat - bot->position.lat);
   double d_lon = deg_to_rad(dest_lon - bot->position.lon);
 
-  double a = pow(sin(d_lat / 2), 2) + cos(lat_rad) * cos(dest_lat_rad) * pow(sin(d_lon / 2), 2);
+  double sin_lat = sin(d_lat / 2);
+  double sin_lon = sin(d_lon / 2);
+  double a = sin_lat * sin_lat + cos(lat_rad) * cos(dest_lat_rad) * sin_lon * sin_lon;
   double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
   return EARTH_RADIUS * c;

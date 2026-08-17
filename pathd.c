@@ -8,6 +8,9 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
 
 int pathd_init(void) {
   printf("[pathd] Initializing Path Planning Daemon...\n");
