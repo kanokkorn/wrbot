@@ -1,26 +1,14 @@
 #define _POSIX_C_SOURCE 200809L
 #include "comm.h"
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <arpa/inet.h>
 #include <signal.h>
+#include <time.h>
 
-static const char *server_addr = "127.0.0.1";
 static pid_t comm_pid = -1;
-
-typedef enum {
-  RESET,
-  READY,
-  SAVE,
-  WAIT,
-  STOP,
-  EXEC
-} Status;
 
 int comm_init(robot_t *bot) {
   printf("[comm] Initializing Remote Control Daemon (TCP/IP)...\n");
@@ -49,59 +37,35 @@ void comm_cleanup(void) {
 }
 
 void comm_handle_remote(robot_t *bot) {
-  int client_socket = socket(AF_INET, SOCK_STREAM, 0);
-  if (client_socket < 0) {
-    perror("[comm] Socket creation failed");
-    return;
-  }
-
-  struct sockaddr_in address;
-  memset(&address, 0, sizeof(address));
-  address.sin_family = AF_INET;
-  address.sin_port = htons(7000);
-
-  if (inet_pton(AF_INET, server_addr, &address.sin_addr) <= 0) {
-    fprintf(stderr, "[comm] Invalid address: %s\n", server_addr);
-    close(client_socket);
-    return;
-  }
-
   printf("[comm] Remote Control Daemon (PID: %d) is running...\n", getpid());
+  srand(getpid() ^ (unsigned int)time(NULL));
 
-  int enable = 1;
-  while (enable) {
-    sleep(10);
-    Status check = (Status)(rand() % 6);
+  while (1) {
+    sleep(2);
 
+    int check = rand() % 6;
     switch (check) {
-      case RESET:
-        printf("[comm] RESET received: resetting position and task now\n");
+      case 0: // RESET
+        printf("[comm] RESET received: resetting position\n");
         bot->position.lat = 10.9995;
         bot->position.lon = 10.9995;
-        bot->fsm.current_state = ROBOT_STATE_IDLE;
+        fsm_handle_event(&bot->fsm, ROBOT_EVENT_TASK_COMPLETED);
         break;
-      case STOP:
+      case 1: // STOP
         printf("[comm] STOP received: stopping now\n");
         bot->speed = 0;
-        bot->fsm.current_state = ROBOT_STATE_IDLE;
+        fsm_handle_event(&bot->fsm, ROBOT_EVENT_TASK_COMPLETED);
         break;
-      case SAVE:
-        printf("[comm] SAVE received: saving current state...\n");
-        break;
-      case WAIT:
+      case 2: // WAIT / IDLE
         printf("[comm] WAIT received: pausing task...\n");
-        bot->fsm.current_state = ROBOT_STATE_IDLE;
+        fsm_handle_event(&bot->fsm, ROBOT_EVENT_TASK_COMPLETED);
         break;
-      case EXEC:
+      case 3: // EXEC / MOVE
         printf("[comm] EXEC received: executing stored tasks\n");
-        bot->fsm.current_state = ROBOT_STATE_MOVING;
+        fsm_handle_event(&bot->fsm, ROBOT_EVENT_WAYPOINT_RECEIVED);
         break;
-      case READY:
       default:
-        printf("[comm] READY: waiting for next command...\n");
         break;
     }
   }
-
-  close(client_socket);
 }

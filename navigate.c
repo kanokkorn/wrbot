@@ -8,10 +8,10 @@ double haversine(const robot_t *bot, double dest_lat, double dest_lon) {
   double d_lat = deg_to_rad(dest_lat - bot->position.lat);
   double d_lon = deg_to_rad(dest_lon - bot->position.lon);
 
-  double sin_dlat = sin(d_lat / 2.0);
-  double sin_dlon = sin(d_lon / 2.0);
-  double a = sin_dlat * sin_dlat + cos(lat_rad) * cos(dest_lat_rad) * sin_dlon * sin_dlon;
-  double c = 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
+  double sin_lat = sin(d_lat / 2);
+  double sin_lon = sin(d_lon / 2);
+  double a = sin_lat * sin_lat + cos(lat_rad) * cos(dest_lat_rad) * sin_lon * sin_lon;
+  double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
   return EARTH_RADIUS * c;
 }
@@ -41,6 +41,9 @@ void update_robot_mock_position(robot_t *bot, double dest_lat, double dest_lon) 
   double d_lat = (dist_to_move * cos(deg_to_rad(bearing))) / METERS_PER_DEGREE;
   double d_lon = (dist_to_move * sin(deg_to_rad(bearing))) / (METERS_PER_DEGREE * cos(deg_to_rad(bot->position.lat)));
 
-  bot->position.lat += d_lat + (((double)rand() / RAND_MAX * 0.00001) - 0.000005);
-  bot->position.lon += d_lon + (((double)rand() / RAND_MAX * 0.00001) - 0.000005);
+  bot->position.lat += d_lat;
+  bot->position.lon += d_lon;
+
+  bot->position.lat += ((double)rand() / RAND_MAX * 0.00001) - 0.000005;
+  bot->position.lon += ((double)rand() / RAND_MAX * 0.00001) - 0.000005;
 }

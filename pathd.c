@@ -22,66 +22,62 @@ int pathd_run_simulation(robot_t *bot) {
     return 1;
   }
 
-  struct stat st;
-  if (fstat(fd, &st) < 0 || st.st_size == 0) {
-    perror("[pathd] Error getting file status or file empty");
+  struct stat sb;
+  if (fstat(fd, &sb) < 0) {
+    perror("[pathd] fstat failed");
     close(fd);
     return 1;
   }
 
-  char *map = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  char *addr = mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
   close(fd);
 
-  if (map == MAP_FAILED) {
-    perror("[pathd] Error memory mapping GPS file");
+  if (addr == MAP_FAILED) {
+    perror("[pathd] mmap failed");
     return 1;
   }
 
-  printf("[pathd] Reading waypoints from: %s\n", fname);
-
-  const char *p = map;
-  const char *end = map + st.st_size;
+  printf("[pathd] Reading waypoints using memory map from: %s\n", fname);
   int round = 0;
+  const char *curr = addr;
+  const char *limit = addr + sb.st_size;
 
-  while (p < end && !stop_signal) {
-    const char *line_end = p;
-    while (line_end < end && *line_end != '\n' && *line_end != '\r') {
-      line_end++;
+  while (curr < limit && !stop_signal) {
+    while (curr < limit && (*curr == ' ' || *curr == '\n' || *curr == '\r' || *curr == '\t')) {
+      curr++;
     }
+    if (curr >= limit) break;
 
-    if (line_end == p) {
-      p++;
+    char *next;
+    double dest_lat = strtod(curr, &next);
+    if (curr == next || *next != ',') {
+      while (curr < limit && *curr != '\n') curr++;
       continue;
     }
+    curr = next + 1;
+    double dest_lon = strtod(curr, &next);
+    if (curr == next) {
+      while (curr < limit && *curr != '\n') curr++;
+      continue;
+    }
+    curr = next;
 
-    double dest_lat, dest_lon;
-    if (sscanf(p, "%lf,%lf", &dest_lat, &dest_lon) == 2) {
-      printf("[pathd] Processing waypoint #%d\n", ++round);
-
-      bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
-
-      while (bot->distance_to_target >= TOLERANCE && !stop_signal) {
-        if (bot->fsm.current_state != ROBOT_STATE_MOVING) {
-          print_robot_status(bot);
-          printf("[pathd] Robot is %s. Waiting for EXEC command...\n",
-                 (bot->fsm.current_state == ROBOT_STATE_IDLE) ? "IDLE" : "WORKING");
-          sleep(2);
-          continue;
-        }
-
-        double prev_distance = bot->distance_to_target;
-        bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
-
-        double speed = calculate_speed(bot->distance_to_target, prev_distance, 1);
-        bot->speed = (speed < 0) ? -speed : speed;
-        if (bot->speed < 0.5) bot->speed = 1.0;
+    printf("[pathd] Processing waypoint #%d\n", ++round);
+    fsm_handle_event(&bot->fsm, ROBOT_EVENT_WAYPOINT_RECEIVED);
+    bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
 
         print_robot_status(bot);
-        update_robot_mock_position(bot, dest_lat, dest_lon);
-        sleep(1);
+        printf("[pathd] Robot is not MOVING. Waiting for state update...\n");
+        sleep(2);
+        continue;
       }
 
-      if (stop_signal) break;
+      double prev_distance = bot->distance_to_target;
+      bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
+
+      double speed = calculate_speed(bot->distance_to_target, prev_distance, 1);
+      bot->speed = (speed < 0) ? -speed : speed;
+      if (bot->speed < 0.5) bot->speed = 1.0;
 
       printf("[pathd] --- Waypoint reached ---\n");
       sleep(2);
@@ -89,12 +85,16 @@ int pathd_run_simulation(robot_t *bot) {
       sleep(1);
     }
 
-    p = line_end;
-    while (p < end && (*p == '\n' || *p == '\r')) {
-      p++;
-    }
+    if (stop_signal) break;
+
+    printf("[pathd] --- Waypoint reached ---\n");
+    fsm_handle_event(&bot->fsm, ROBOT_EVENT_WAYPOINT_REACHED);
+    sleep(1);
+    printf("[pathd] Task finished. Transitioning state...\n");
+    fsm_handle_event(&bot->fsm, ROBOT_EVENT_TASK_COMPLETED);
+    sleep(1);
   }
 
-  munmap(map, st.st_size);
+  munmap(addr, sb.st_size);
   return 0;
 }
