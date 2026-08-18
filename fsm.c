@@ -3,15 +3,13 @@
 #include <stdio.h>
 
 void fsm_init(fsm_t *fsm) {
-  if (fsm) {
-    fsm->current_state = ROBOT_STATE_IDLE;
-    printf("FSM initialized. Current state: IDLE\n");
-  }
+  if (!fsm) return;
+  fsm->current_state = ROBOT_STATE_IDLE;
+  printf("FSM initialized. Current state: IDLE\n");
 }
 
 void fsm_handle_event(fsm_t *fsm, robot_event_t event) {
   if (!fsm) return;
-
   printf("Handling event: %d in state: %d\n", event, fsm->current_state);
 
   switch (fsm->current_state) {

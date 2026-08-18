@@ -1,7 +1,3 @@
-/*
- * wrbot - haversine implementation for a farming rover
- */
-
 #ifndef MAIN_H
 #define MAIN_H
 
@@ -11,7 +7,6 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include "fsm.h"
@@ -41,8 +36,7 @@ typedef struct {
 
 /* Inline math functions */
 static inline double calculate_speed(double dist_a, double dist_b, int time) {
-  if (time == 0) return 0;
-  return (dist_b - dist_a) / (double)time;
+  return time == 0 ? 0 : (dist_b - dist_a) / (double)time;
 }
 
 static inline double deg_to_rad(double degrees) {

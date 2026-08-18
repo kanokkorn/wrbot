@@ -6,21 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
-const char *server_addr = "127.0.0.1";
+static const char *server_addr = "127.0.0.1";
 static pid_t comm_pid = -1;
 
-typedef enum {
-  RESET,
-  READY,
-  SAVE,
-  WAIT,
-  STOP,
-  EXEC
-} Status;
+typedef enum { RESET, READY, SAVE, WAIT, STOP, EXEC } Status;
 
 int comm_init(robot_t *bot) {
   printf("[comm] Initializing Remote Control Daemon (TCP/IP)...\n");
@@ -68,8 +60,7 @@ void comm_handle_remote(robot_t *bot) {
 
   printf("[comm] Remote Control Daemon (PID: %d) is running...\n", getpid());
 
-  int enable = 1;
-  while (enable) {
+  while (1) {
     sleep(10);
     Status check = (Status)(rand() % 6);
 
