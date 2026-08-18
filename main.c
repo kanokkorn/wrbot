@@ -31,13 +31,21 @@ int self_check(robot_t *bot) {
 }
 
 void print_robot_status(const robot_t *bot) {
-  printf("\033[2J\033[H");
-  printf("--- Robot Status ---\n");
-  printf("Position:  (Lat: %f, Lon: %f)\n", bot->position.lat, bot->position.lon);
-  printf("Speed:     %.2f m/s\n", bot->speed);
-  printf("Angle:     %.2f degrees\n", bot->angle);
-  printf("Distance:  %.2f meters\n", bot->distance_to_target);
-  printf("--------------------\n");
+  char buf[256];
+  int len = snprintf(buf, sizeof(buf),
+                     "\033[2J\033[H"
+                     "--- Robot Status ---\n"
+                     "Position:  (Lat: %f, Lon: %f)\n"
+                     "Speed:     %.2f m/s\n"
+                     "Angle:     %.2f degrees\n"
+                     "Distance:  %.2f meters\n"
+                     "--------------------\n",
+                     bot->position.lat, bot->position.lon,
+                     bot->speed, bot->angle, bot->distance_to_target);
+  if (len > 0) {
+    size_t to_write = (size_t)len < sizeof(buf) ? (size_t)len : sizeof(buf) - 1;
+    (void)write(STDOUT_FILENO, buf, to_write);
+  }
 }
 
 void initialize_robot(robot_t *bot) {
