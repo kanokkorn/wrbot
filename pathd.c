@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
 #include <unistd.h>
 
 int pathd_init(void) {
@@ -12,31 +15,51 @@ int pathd_init(void) {
 
 int pathd_run_simulation(robot_t *bot) {
   const char *fname = "gps_list.txt";
-  char *line = NULL;
-  size_t len = 0;
-  ssize_t read_bytes;
-  int round = 0;
+  int fd = open(fname, O_RDONLY);
+  if (fd < 0) {
+    perror("[pathd] Error opening GPS file");
+    return 1;
+  }
 
-  FILE *gps_file = fopen(fname, "r");
-  if (!gps_file) {
-    perror("Error opening GPS file");
+  struct stat st;
+  if (fstat(fd, &st) < 0 || st.st_size == 0) {
+    perror("[pathd] Error stating GPS file");
+    close(fd);
+    return 1;
+  }
+
+  char *map = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  close(fd);
+  if (map == MAP_FAILED) {
+    perror("[pathd] mmap failed");
     return 1;
   }
 
   printf("[pathd] Reading waypoints from: %s\n", fname);
-  while ((read_bytes = getline(&line, &len, gps_file)) != -1) {
+  int round = 0;
+  const char *ptr = map;
+  const char *end = map + st.st_size;
+
+  while (ptr < end && !stop_signal) {
+    const char *line_start = ptr;
+    while (ptr < end && *ptr != '\n') ptr++;
+    size_t line_len = ptr - line_start;
+    if (ptr < end && *ptr == '\n') ptr++;
+
+    if (line_len == 0 || line_len >= 128) continue;
+
+    char line_buf[128];
+    memcpy(line_buf, line_start, line_len);
+    line_buf[line_len] = '\0';
+
+    char *comma = strchr(line_buf, ',');
+    if (!comma) continue;
+    *comma = '\0';
+
+    double dest_lat = atof(line_buf);
+    double dest_lon = atof(comma + 1);
+
     printf("[pathd] Processing waypoint #%d\n", ++round);
-
-    char *lat_str = strtok(line, ",");
-    char *lon_str = strtok(NULL, " \n\r");
-
-    if (!lat_str || !lon_str) {
-      fprintf(stderr, "[pathd] Invalid waypoint format\n");
-      continue;
-    }
-
-    double dest_lat = atof(lat_str);
-    double dest_lon = atof(lon_str);
     bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
 
     while (bot->distance_to_target >= TOLERANCE && !stop_signal) {
@@ -51,10 +74,9 @@ int pathd_run_simulation(robot_t *bot) {
       double prev_distance = bot->distance_to_target;
       bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
 
-      // Avoid negative speed if we overshot a bit or due to noise
       double speed = calculate_speed(bot->distance_to_target, prev_distance, 1);
       bot->speed = (speed < 0) ? -speed : speed;
-      if (bot->speed < 0.5) bot->speed = 1.0; // Keep moving
+      if (bot->speed < 0.5) bot->speed = 1.0;
 
       print_robot_status(bot);
       update_robot_mock_position(bot, dest_lat, dest_lon);
@@ -69,9 +91,6 @@ int pathd_run_simulation(robot_t *bot) {
     sleep(1);
   }
 
-  fclose(gps_file);
-  if (line) {
-    free(line);
-  }
+  munmap(map, st.st_size);
   return 0;
 }
