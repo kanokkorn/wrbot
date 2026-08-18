@@ -1,15 +1,11 @@
 #define _POSIX_C_SOURCE 200809L
 #include "comm.h"
-#include <arpa/inet.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
-static const char *server_addr = "127.0.0.1";
 static pid_t comm_pid = -1;
 
 typedef enum { RESET, READY, SAVE, WAIT, STOP, EXEC } Status;
@@ -41,23 +37,6 @@ void comm_cleanup(void) {
 }
 
 void comm_handle_remote(robot_t *bot) {
-  int client_socket = socket(AF_INET, SOCK_STREAM, 0);
-  if (client_socket < 0) {
-    perror("[comm] Socket creation failed");
-    return;
-  }
-
-  struct sockaddr_in address;
-  memset(&address, 0, sizeof(address));
-  address.sin_family = AF_INET;
-  address.sin_port = htons(7000);
-
-  if (inet_pton(AF_INET, server_addr, &address.sin_addr) <= 0) {
-    fprintf(stderr, "[comm] Invalid address: %s\n", server_addr);
-    close(client_socket);
-    return;
-  }
-
   printf("[comm] Remote Control Daemon (PID: %d) is running...\n", getpid());
 
   while (1) {
@@ -93,6 +72,4 @@ void comm_handle_remote(robot_t *bot) {
         break;
     }
   }
-
-  close(client_socket);
 }

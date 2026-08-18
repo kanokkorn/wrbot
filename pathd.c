@@ -2,6 +2,7 @@
 #include "pathd.h"
 #include "navigate.h"
 #include <fcntl.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,8 +16,7 @@ int pathd_init(void) {
 }
 
 int pathd_run_simulation(robot_t *bot) {
-  const char *fname = "gps_list.txt";
-  int fd = open(fname, O_RDONLY);
+  int fd = open("gps_list.txt", O_RDONLY);
   if (fd < 0) {
     perror("Error opening GPS file");
     return 1;
@@ -42,11 +42,10 @@ int pathd_run_simulation(robot_t *bot) {
   }
 
   int round = 0;
-  const char *ptr = data;
-  const char *end = data + st.st_size;
+  char *ptr = data, *end = data + st.st_size;
 
   while (ptr < end && !stop_signal) {
-    const char *line_end = memchr(ptr, '\n', end - ptr);
+    char *line_end = memchr(ptr, '\n', end - ptr);
     if (!line_end) line_end = end;
 
     size_t line_len = line_end - ptr;
@@ -77,10 +76,8 @@ int pathd_run_simulation(robot_t *bot) {
 
             double prev_distance = bot->distance_to_target;
             bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
-
-            double speed = calculate_speed(bot->distance_to_target, prev_distance, 1);
-            bot->speed = (speed < 0) ? -speed : speed;
-            if (bot->speed < 0.5) bot->speed = 1.0;
+            double speed = fabs(calculate_speed(bot->distance_to_target, prev_distance, 1));
+            bot->speed = (speed < 0.5) ? 1.0 : speed;
 
             print_robot_status(bot);
             update_robot_mock_position(bot, dest_lat, dest_lon);
@@ -88,7 +85,6 @@ int pathd_run_simulation(robot_t *bot) {
           }
 
           if (stop_signal) break;
-
           printf("[pathd] --- Waypoint reached ---\n");
           sleep(2);
           printf("[pathd] Task finished. Moving to next waypoint...\n");

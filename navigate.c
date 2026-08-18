@@ -6,14 +6,12 @@
 double haversine(const robot_t *bot, double dest_lat, double dest_lon) {
   double lat1 = deg_to_rad(bot->position.lat);
   double lat2 = deg_to_rad(dest_lat);
-  double d_lat = deg_to_rad(dest_lat - bot->position.lat);
-  double d_lon = deg_to_rad(dest_lon - bot->position.lon);
-
-  double sin_lat = sin(d_lat / 2.0);
-  double sin_lon = sin(d_lon / 2.0);
+  double sin_lat = sin(deg_to_rad(dest_lat - bot->position.lat) / 2.0);
+  double sin_lon = sin(deg_to_rad(dest_lon - bot->position.lon) / 2.0);
   double a = sin_lat * sin_lat + cos(lat1) * cos(lat2) * sin_lon * sin_lon;
+  double s = sqrt(a > 1.0 ? 1.0 : a);
 
-  return EARTH_RADIUS * 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
+  return EARTH_RADIUS * 2.0 * asin(s);
 }
 
 double calculate_bearing(double lat1, double lon1, double lat2, double lon2) {
