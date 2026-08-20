@@ -9,25 +9,21 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-static const char *server_addr = "127.0.0.1";
 static pid_t comm_pid = -1;
 
-typedef enum { RESET, READY, SAVE, WAIT, STOP, EXEC } Status;
+typedef enum { RESET, READY, SAVE, WAIT, STOP, EXEC } comm_cmd_t;
 
 int comm_init(robot_t *bot) {
   printf("[comm] Initializing Remote Control Daemon (TCP/IP)...\n");
-
   comm_pid = fork();
   if (comm_pid < 0) {
     perror("[comm] Fork failed");
     return -1;
   }
-
   if (comm_pid == 0) {
     comm_handle_remote(bot);
     exit(0);
   }
-
   return 0;
 }
 
@@ -47,13 +43,11 @@ void comm_handle_remote(robot_t *bot) {
     return;
   }
 
-  struct sockaddr_in address;
-  memset(&address, 0, sizeof(address));
-  address.sin_family = AF_INET;
-  address.sin_port = htons(7000);
-
-  if (inet_pton(AF_INET, server_addr, &address.sin_addr) <= 0) {
-    fprintf(stderr, "[comm] Invalid address: %s\n", server_addr);
+  struct sockaddr_in address = {
+    .sin_family = AF_INET,
+    .sin_port = htons(7000)
+  };
+  if (inet_pton(AF_INET, "127.0.0.1", &address.sin_addr) <= 0) {
     close(client_socket);
     return;
   }
@@ -62,8 +56,7 @@ void comm_handle_remote(robot_t *bot) {
 
   while (1) {
     sleep(10);
-    Status check = (Status)(rand() % 6);
-
+    comm_cmd_t check = (comm_cmd_t)(rand() % 6);
     switch (check) {
       case RESET:
         printf("[comm] RESET received: resetting position and task now\n");
@@ -71,10 +64,8 @@ void comm_handle_remote(robot_t *bot) {
         bot->position.lon = 10.9995;
         bot->fsm.current_state = ROBOT_STATE_IDLE;
         break;
-      case STOP:
-        printf("[comm] STOP received: stopping now\n");
-        bot->speed = 0;
-        bot->fsm.current_state = ROBOT_STATE_IDLE;
+      case READY:
+        printf("[comm] READY: waiting for next command...\n");
         break;
       case SAVE:
         printf("[comm] SAVE received: saving current state...\n");
@@ -83,13 +74,14 @@ void comm_handle_remote(robot_t *bot) {
         printf("[comm] WAIT received: pausing task...\n");
         bot->fsm.current_state = ROBOT_STATE_IDLE;
         break;
+      case STOP:
+        printf("[comm] STOP received: stopping now\n");
+        bot->speed = 0;
+        bot->fsm.current_state = ROBOT_STATE_IDLE;
+        break;
       case EXEC:
         printf("[comm] EXEC received: executing stored tasks\n");
         bot->fsm.current_state = ROBOT_STATE_MOVING;
-        break;
-      case READY:
-      default:
-        printf("[comm] READY: waiting for next command...\n");
         break;
     }
   }

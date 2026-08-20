@@ -1,16 +1,12 @@
-# Compiler and flags
 CC      ?= gcc
 CFLAGS  += -Wall -Wextra -g -std=c99
-LDFLAGS +=
 LDLIBS  += -lm
 PREFIX  ?= /usr/local
 
-# Project files
 PROG = wrbot
 SRCS = main.c navigate.c pathd.c msgd.c comm.c fsm.c
 OBJS = ${SRCS:.c=.o}
 
-# Targets
 all: ${PROG}
 
 .c.o:
@@ -19,7 +15,6 @@ all: ${PROG}
 ${PROG}: ${OBJS}
 	${CC} ${LDFLAGS} -o $@ ${OBJS} ${LDLIBS}
 
-# Phony targets
 .PHONY: all clean install uninstall
 
 clean:

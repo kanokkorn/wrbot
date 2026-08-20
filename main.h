@@ -19,13 +19,11 @@
 #define TOLERANCE    2.0
 #define EARTH_RADIUS 6371000.0 // meters
 
-/* GPS coordinate */
 typedef struct {
   double lat;
   double lon;
 } gps_t;
 
-/* Robot state */
 typedef struct {
   gps_t position;
   double speed;
@@ -34,22 +32,15 @@ typedef struct {
   fsm_t fsm;
 } robot_t;
 
-/* Inline math functions */
 static inline double calculate_speed(double dist_a, double dist_b, int time) {
   return time == 0 ? 0 : (dist_b - dist_a) / (double)time;
 }
 
-static inline double deg_to_rad(double degrees) {
-  return degrees * M_PI / 180.0;
-}
-
-static inline double rad_to_deg(double radians) {
-  return radians * 180.0 / M_PI;
-}
+static inline double deg_to_rad(double deg) { return deg * M_PI / 180.0; }
+static inline double rad_to_deg(double rad) { return rad * 180.0 / M_PI; }
 
 extern volatile sig_atomic_t stop_signal;
 
-/* Function Prototypes */
 void print_robot_status(const robot_t *bot);
 void initialize_robot(robot_t *bot);
 void handle_interrupt(int signal);

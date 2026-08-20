@@ -3,17 +3,19 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define METERS_PER_DEGREE 111111.0
+
 double haversine(const robot_t *bot, double dest_lat, double dest_lon) {
   double lat1 = deg_to_rad(bot->position.lat);
   double lat2 = deg_to_rad(dest_lat);
   double d_lat = deg_to_rad(dest_lat - bot->position.lat);
   double d_lon = deg_to_rad(dest_lon - bot->position.lon);
 
-  double sin_lat = sin(d_lat / 2.0);
-  double sin_lon = sin(d_lon / 2.0);
-  double a = sin_lat * sin_lat + cos(lat1) * cos(lat2) * sin_lon * sin_lon;
+  double sin_half_lat = sin(d_lat / 2.0);
+  double sin_half_lon = sin(d_lon / 2.0);
+  double a = sin_half_lat * sin_half_lat + cos(lat1) * cos(lat2) * sin_half_lon * sin_half_lon;
 
-  return EARTH_RADIUS * 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
+  return 2.0 * EARTH_RADIUS * asin(sqrt(a));
 }
 
 double calculate_bearing(double lat1, double lon1, double lat2, double lon2) {
@@ -32,10 +34,10 @@ void update_robot_mock_position(robot_t *bot, double dest_lat, double dest_lon) 
   double bearing = calculate_bearing(bot->position.lat, bot->position.lon, dest_lat, dest_lon);
   bot->angle = bearing;
 
-  const double METERS_PER_DEGREE = 111111.0;
-  double d_lat = (bot->speed * cos(deg_to_rad(bearing))) / METERS_PER_DEGREE;
-  double d_lon = (bot->speed * sin(deg_to_rad(bearing))) / (METERS_PER_DEGREE * cos(deg_to_rad(bot->position.lat)));
+  double rad = deg_to_rad(bearing);
+  double noise_lat = ((double)rand() / RAND_MAX * 0.00001) - 0.000005;
+  double noise_lon = ((double)rand() / RAND_MAX * 0.00001) - 0.000005;
 
-  bot->position.lat += d_lat + (((double)rand() / RAND_MAX * 0.00001) - 0.000005);
-  bot->position.lon += d_lon + (((double)rand() / RAND_MAX * 0.00001) - 0.000005);
+  bot->position.lat += (bot->speed * cos(rad)) / METERS_PER_DEGREE + noise_lat;
+  bot->position.lon += (bot->speed * sin(rad)) / (METERS_PER_DEGREE * cos(deg_to_rad(bot->position.lat))) + noise_lon;
 }
