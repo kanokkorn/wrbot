@@ -17,36 +17,30 @@ int self_check(robot_t *bot) {
   printf("--- Starting self-check subroutine ---\n");
   if (!bot) return 1;
 
-  usleep(500000);
-  printf("Checking GPS module... OK\n");
-  usleep(500000);
-  printf("Checking IMU... OK\n");
-  usleep(500000);
-  printf("Checking MCU connection... OK\n");
-  usleep(500000);
+  const char *subroutines[] = {"GPS module...", "IMU...", "MCU connection..."};
+  for (size_t i = 0; i < sizeof(subroutines) / sizeof(subroutines[0]); i++) {
+    usleep(500000);
+    printf("Checking %s OK\n", subroutines[i]);
+  }
 
-  printf("Initial Position: Lat %f, Lon %f\n", bot->position.lat, bot->position.lon);
-  printf("--- Self-check completed successfully ---\n\n");
+  printf("Initial Position: Lat %f, Lon %f\n--- Self-check completed successfully ---\n\n",
+         bot->position.lat, bot->position.lon);
   return 0;
 }
 
 void print_robot_status(const robot_t *bot) {
-  printf("\033[2J\033[H");
-  printf("--- Robot Status ---\n");
-  printf("Position:  (Lat: %f, Lon: %f)\n", bot->position.lat, bot->position.lon);
-  printf("Speed:     %.2f m/s\n", bot->speed);
-  printf("Angle:     %.2f degrees\n", bot->angle);
-  printf("Distance:  %.2f meters\n", bot->distance_to_target);
-  printf("--------------------\n");
+  printf("\033[2J\033[H--- Robot Status ---\n"
+         "Position:  (Lat: %f, Lon: %f)\n"
+         "Speed:     %.2f m/s\n"
+         "Angle:     %.2f degrees\n"
+         "Distance:  %.2f meters\n"
+         "--------------------\n",
+         bot->position.lat, bot->position.lon, bot->speed, bot->angle, bot->distance_to_target);
 }
 
 void initialize_robot(robot_t *bot) {
   srand(time(NULL));
-  bot->position.lat = 10.9995;
-  bot->position.lon = 10.9995;
-  bot->speed = 0.0;
-  bot->angle = 0.0;
-  bot->distance_to_target = 0.0;
+  *bot = (robot_t){ .position = {10.9995, 10.9995} };
   fsm_init(&bot->fsm);
 }
 
@@ -77,9 +71,7 @@ int main(void) {
 
   bot->fsm.current_state = ROBOT_STATE_MOVING;
 
-  if (pathd_run_simulation(bot) != 0) {
-    fprintf(stderr, "Simulation failed.\n");
-  }
+  if (pathd_run_simulation(bot) != 0) fprintf(stderr, "Simulation failed.\n");
 
   comm_cleanup();
   munmap(bot, sizeof(robot_t));
