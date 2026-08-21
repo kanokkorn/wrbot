@@ -17,13 +17,14 @@ int self_check(robot_t *bot) {
   printf("--- Starting self-check subroutine ---\n");
   if (!bot) return 1;
 
-  usleep(500000);
+  struct timespec req = {0, 500000000L};
+  nanosleep(&req, NULL);
   printf("Checking GPS module... OK\n");
-  usleep(500000);
+  nanosleep(&req, NULL);
   printf("Checking IMU... OK\n");
-  usleep(500000);
+  nanosleep(&req, NULL);
   printf("Checking MCU connection... OK\n");
-  usleep(500000);
+  nanosleep(&req, NULL);
 
   printf("Initial Position: Lat %f, Lon %f\n", bot->position.lat, bot->position.lon);
   printf("--- Self-check completed successfully ---\n\n");
@@ -41,7 +42,7 @@ void print_robot_status(const robot_t *bot) {
 }
 
 void initialize_robot(robot_t *bot) {
-  srand(time(NULL));
+  srand((unsigned int)time(NULL));
   bot->position.lat = 10.9995;
   bot->position.lon = 10.9995;
   bot->speed = 0.0;
@@ -60,7 +61,12 @@ int main(void) {
   }
 
   initialize_robot(bot);
-  signal(SIGINT, handle_interrupt);
+
+  struct sigaction sa;
+  sa.sa_handler = handle_interrupt;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+  sigaction(SIGINT, &sa, NULL);
 
   if (self_check(bot) != 0) {
     fprintf(stderr, "Self-check failed. Exiting.\n");

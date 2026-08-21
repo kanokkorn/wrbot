@@ -47,11 +47,7 @@ void comm_handle_remote(robot_t *bot) {
     return;
   }
 
-  struct sockaddr_in address;
-  memset(&address, 0, sizeof(address));
-  address.sin_family = AF_INET;
-  address.sin_port = htons(7000);
-
+  struct sockaddr_in address = { .sin_family = AF_INET, .sin_port = htons(7000) };
   if (inet_pton(AF_INET, server_addr, &address.sin_addr) <= 0) {
     fprintf(stderr, "[comm] Invalid address: %s\n", server_addr);
     close(client_socket);
@@ -62,9 +58,7 @@ void comm_handle_remote(robot_t *bot) {
 
   while (1) {
     sleep(10);
-    Status check = (Status)(rand() % 6);
-
-    switch (check) {
+    switch ((Status)(rand() % 6)) {
       case RESET:
         printf("[comm] RESET received: resetting position and task now\n");
         bot->position.lat = 10.9995;

@@ -15,23 +15,16 @@ int pathd_init(void) {
 }
 
 int pathd_run_simulation(robot_t *bot) {
-  const char *fname = "gps_list.txt";
-  int fd = open(fname, O_RDONLY);
+  int fd = open("gps_list.txt", O_RDONLY);
   if (fd < 0) {
     perror("Error opening GPS file");
     return 1;
   }
 
   struct stat st;
-  if (fstat(fd, &st) < 0) {
-    perror("Error getting GPS file size");
+  if (fstat(fd, &st) < 0 || st.st_size == 0) {
     close(fd);
-    return 1;
-  }
-
-  if (st.st_size == 0) {
-    close(fd);
-    return 0;
+    return st.st_size == 0 ? 0 : 1;
   }
 
   char *data = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
@@ -40,6 +33,10 @@ int pathd_run_simulation(robot_t *bot) {
     perror("Error mapping GPS file");
     return 1;
   }
+
+#ifdef MADV_SEQUENTIAL
+  madvise(data, st.st_size, MADV_SEQUENTIAL);
+#endif
 
   int round = 0;
   const char *ptr = data;
@@ -75,12 +72,11 @@ int pathd_run_simulation(robot_t *bot) {
               continue;
             }
 
-            double prev_distance = bot->distance_to_target;
+            double prev_dist = bot->distance_to_target;
             bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
 
-            double speed = calculate_speed(bot->distance_to_target, prev_distance, 1);
-            bot->speed = (speed < 0) ? -speed : speed;
-            if (bot->speed < 0.5) bot->speed = 1.0;
+            double speed = fabs(calculate_speed(bot->distance_to_target, prev_dist, 1));
+            bot->speed = (speed < 0.5) ? 1.0 : speed;
 
             print_robot_status(bot);
             update_robot_mock_position(bot, dest_lat, dest_lon);
