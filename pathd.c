@@ -41,6 +41,8 @@ int pathd_run_simulation(robot_t *bot) {
     return 1;
   }
 
+  madvise(data, st.st_size, MADV_SEQUENTIAL);
+
   int round = 0;
   const char *ptr = data;
   const char *end = data + st.st_size;
@@ -49,16 +51,16 @@ int pathd_run_simulation(robot_t *bot) {
     const char *line_end = memchr(ptr, '\n', end - ptr);
     if (!line_end) line_end = end;
 
-    size_t line_len = line_end - ptr;
-    if (line_len > 0) {
-      char line[128];
-      if (line_len >= sizeof(line)) line_len = sizeof(line) - 1;
-      memcpy(line, ptr, line_len);
-      line[line_len] = '\0';
+    size_t len = line_end - ptr;
+    if (len > 0) {
+      char buf[64];
+      if (len >= sizeof(buf)) len = sizeof(buf) - 1;
+      memcpy(buf, ptr, len);
+      buf[len] = '\0';
 
       char *endptr;
-      double dest_lat = strtod(line, &endptr);
-      if (endptr != line) {
+      double dest_lat = strtod(buf, &endptr);
+      if (endptr != buf) {
         while (*endptr == ',' || *endptr == ' ' || *endptr == '\t') endptr++;
         char *lon_ptr = endptr;
         double dest_lon = strtod(lon_ptr, &endptr);
@@ -96,7 +98,6 @@ int pathd_run_simulation(robot_t *bot) {
         }
       }
     }
-
     ptr = (line_end < end) ? line_end + 1 : end;
   }
 

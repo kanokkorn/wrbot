@@ -63,34 +63,27 @@ void comm_handle_remote(robot_t *bot) {
   while (1) {
     sleep(10);
     Status check = (Status)(rand() % 6);
+    static const char *msgs[] = {
+      "[comm] RESET received: resetting position and task now\n",
+      "[comm] READY: waiting for next command...\n",
+      "[comm] SAVE received: saving current state...\n",
+      "[comm] WAIT received: pausing task...\n",
+      "[comm] STOP received: stopping now\n",
+      "[comm] EXEC received: executing stored tasks\n"
+    };
 
-    switch (check) {
-      case RESET:
-        printf("[comm] RESET received: resetting position and task now\n");
-        bot->position.lat = 10.9995;
-        bot->position.lon = 10.9995;
-        bot->fsm.current_state = ROBOT_STATE_IDLE;
-        break;
-      case STOP:
-        printf("[comm] STOP received: stopping now\n");
-        bot->speed = 0;
-        bot->fsm.current_state = ROBOT_STATE_IDLE;
-        break;
-      case SAVE:
-        printf("[comm] SAVE received: saving current state...\n");
-        break;
-      case WAIT:
-        printf("[comm] WAIT received: pausing task...\n");
-        bot->fsm.current_state = ROBOT_STATE_IDLE;
-        break;
-      case EXEC:
-        printf("[comm] EXEC received: executing stored tasks\n");
-        bot->fsm.current_state = ROBOT_STATE_MOVING;
-        break;
-      case READY:
-      default:
-        printf("[comm] READY: waiting for next command...\n");
-        break;
+    printf("%s", msgs[check]);
+
+    if (check == RESET) {
+      bot->position = (gps_t){10.9995, 10.9995};
+      bot->fsm.current_state = ROBOT_STATE_IDLE;
+    } else if (check == STOP) {
+      bot->speed = 0;
+      bot->fsm.current_state = ROBOT_STATE_IDLE;
+    } else if (check == WAIT) {
+      bot->fsm.current_state = ROBOT_STATE_IDLE;
+    } else if (check == EXEC) {
+      bot->fsm.current_state = ROBOT_STATE_MOVING;
     }
   }
 
