@@ -1,8 +1,9 @@
+#define _POSIX_C_SOURCE 200809L
 #include "main.h"
+#include "comm.h"
+#include "msgd.h"
 #include "navigate.h"
 #include "pathd.h"
-#include "msgd.h"
-#include "comm.h"
 #include <sys/mman.h>
 
 volatile sig_atomic_t stop_signal = 0;
@@ -13,19 +14,16 @@ void handle_interrupt(int signal) {
 }
 
 int self_check(robot_t *bot) {
-  printf("--- Starting self-check subroutine ---\n");
   if (!bot) return 1;
-
+  static const char *modules[] = {"GPS module", "IMU", "MCU connection"};
+  puts("--- Starting self-check subroutine ---");
+  for (size_t i = 0; i < sizeof(modules)/sizeof(modules[0]); i++) {
+    usleep(500000);
+    printf("Checking %s... OK\n", modules[i]);
+  }
   usleep(500000);
-  printf("Checking GPS module... OK\n");
-  usleep(500000);
-  printf("Checking IMU... OK\n");
-  usleep(500000);
-  printf("Checking MCU connection... OK\n");
-  usleep(500000);
-
-  printf("Initial Position: Lat %f, Lon %f\n", bot->position.lat, bot->position.lon);
-  printf("--- Self-check completed successfully ---\n\n");
+  printf("Initial Position: Lat %f, Lon %f\n--- Self-check completed successfully ---\n\n",
+         bot->position.lat, bot->position.lon);
   return 0;
 }
 
@@ -40,12 +38,8 @@ void print_robot_status(const robot_t *bot) {
 }
 
 void initialize_robot(robot_t *bot) {
-  srand((unsigned int)time(NULL));
-  bot->position.lat = 10.9995;
-  bot->position.lon = 10.9995;
-  bot->speed = 0.0;
-  bot->angle = 0.0;
-  bot->distance_to_target = 0.0;
+  srand(time(NULL));
+  *bot = (robot_t){ .position = {10.9995, 10.9995} };
   fsm_init(&bot->fsm);
 }
 
@@ -78,9 +72,6 @@ int main(void) {
 
   if (pathd_run_simulation(bot) != 0) {
     fprintf(stderr, "Simulation failed.\n");
-    comm_cleanup();
-    munmap(bot, sizeof(robot_t));
-    return 1;
   }
 
   comm_cleanup();
