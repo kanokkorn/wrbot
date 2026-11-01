@@ -23,15 +23,9 @@ int pathd_run_simulation(robot_t *bot) {
   }
 
   struct stat st;
-  if (fstat(fd, &st) < 0) {
-    perror("Error getting GPS file size");
+  if (fstat(fd, &st) < 0 || st.st_size == 0) {
     close(fd);
-    return 1;
-  }
-
-  if (st.st_size == 0) {
-    close(fd);
-    return 0;
+    return st.st_size == 0 ? 0 : 1;
   }
 
   char *data = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
@@ -76,7 +70,7 @@ int pathd_run_simulation(robot_t *bot) {
               continue;
             }
 
-            double prev_distance = bot->distance_to_target;
+            double prev_dist = bot->distance_to_target;
             bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
             double speed = fabs(calculate_speed(bot->distance_to_target, prev_distance, 1));
             bot->speed = (speed < 0.5) ? 1.0 : speed;

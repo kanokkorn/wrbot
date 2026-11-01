@@ -53,7 +53,12 @@ int main(void) {
   }
 
   initialize_robot(bot);
-  signal(SIGINT, handle_interrupt);
+
+  struct sigaction sa;
+  sa.sa_handler = handle_interrupt;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+  sigaction(SIGINT, &sa, NULL);
 
   if (self_check(bot) != 0) {
     fprintf(stderr, "Self-check failed. Exiting.\n");
