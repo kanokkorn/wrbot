@@ -2,6 +2,7 @@
 #include "pathd.h"
 #include "navigate.h"
 #include <fcntl.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,28 +35,25 @@ int pathd_run_simulation(robot_t *bot) {
     return 1;
   }
 
-#ifdef MADV_SEQUENTIAL
   madvise(data, st.st_size, MADV_SEQUENTIAL);
-#endif
 
   int round = 0;
-  const char *ptr = data;
-  const char *end = data + st.st_size;
+  char *ptr = data, *end = data + st.st_size;
 
   while (ptr < end && !stop_signal) {
-    const char *line_end = memchr(ptr, '\n', end - ptr);
+    char *line_end = memchr(ptr, '\n', end - ptr);
     if (!line_end) line_end = end;
 
-    size_t line_len = line_end - ptr;
-    if (line_len > 0) {
-      char line[128];
-      if (line_len >= sizeof(line)) line_len = sizeof(line) - 1;
-      memcpy(line, ptr, line_len);
-      line[line_len] = '\0';
+    size_t len = line_end - ptr;
+    if (len > 0) {
+      char buf[64];
+      if (len >= sizeof(buf)) len = sizeof(buf) - 1;
+      memcpy(buf, ptr, len);
+      buf[len] = '\0';
 
       char *endptr;
-      double dest_lat = strtod(line, &endptr);
-      if (endptr != line) {
+      double dest_lat = strtod(buf, &endptr);
+      if (endptr != buf) {
         while (*endptr == ',' || *endptr == ' ' || *endptr == '\t') endptr++;
         char *lon_ptr = endptr;
         double dest_lon = strtod(lon_ptr, &endptr);
@@ -74,8 +72,7 @@ int pathd_run_simulation(robot_t *bot) {
 
             double prev_dist = bot->distance_to_target;
             bot->distance_to_target = haversine(bot, dest_lat, dest_lon);
-
-            double speed = fabs(calculate_speed(bot->distance_to_target, prev_dist, 1));
+            double speed = fabs(calculate_speed(bot->distance_to_target, prev_distance, 1));
             bot->speed = (speed < 0.5) ? 1.0 : speed;
 
             print_robot_status(bot);
@@ -84,7 +81,6 @@ int pathd_run_simulation(robot_t *bot) {
           }
 
           if (stop_signal) break;
-
           printf("[pathd] --- Waypoint reached ---\n");
           sleep(2);
           printf("[pathd] Task finished. Moving to next waypoint...\n");
@@ -92,7 +88,6 @@ int pathd_run_simulation(robot_t *bot) {
         }
       }
     }
-
     ptr = (line_end < end) ? line_end + 1 : end;
   }
 
